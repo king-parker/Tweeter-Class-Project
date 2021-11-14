@@ -4,7 +4,7 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class LoginPresenter implements UserService.LoginObserver {
+public class LoginPresenter implements UserService.Observer {
 
     public interface View {
         void navigateToUser(User user);
@@ -53,19 +53,19 @@ public class LoginPresenter implements UserService.LoginObserver {
     }
 
     @Override
-    public void loginSucceeded(AuthToken authToken, User user) {
+    public void handleSuccess(User user, AuthToken authToken) {
         view.navigateToUser(user);
         view.clearErrorMessage();
         view.displayInfoMessage("Hello " + user.getName());
     }
 
     @Override
-    public void loginFailed(String message) {
+    public void handleFailure(String message) {
         view.displayErrorMessage("Login failed: " + message);
     }
 
     @Override
-    public void loginThrewException(Exception ex) {
+    public void handleException(Exception ex) {
         view.displayErrorMessage("Login failed: " + ex.getMessage());
     }
 }
