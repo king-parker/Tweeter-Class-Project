@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
+import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -17,6 +19,7 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
         void logoutUser();
         void setFollowingCount(int count);
         void setFollowersCount(int count);
+        void setIsFollower(boolean isFollower);
 
         void displayErrorMessage(String message);
         void clearErrorMessage();
@@ -52,6 +55,10 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
         new FollowService().getFollowersCount(authToken, selectedUser, this);
     }
 
+    public void isFollowing() {
+        new FollowService().isFollower(authToken, Cache.getInstance().getCurrUser(), selectedUser, this);
+    }
+
     @Override
     public void handleSuccess(User user, AuthToken authToken) {
         view.clearInfoMessage();
@@ -67,6 +74,10 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
         else if (msg.getData().containsKey(GetFollowersCountTask.COUNT_KEY)) {
             int count = msg.getData().getInt(GetFollowersCountTask.COUNT_KEY);
             view.setFollowersCount(count);
+        }
+        else if (msg.getData().containsKey(IsFollowerTask.IS_FOLLOWER_KEY)) {
+            boolean isFollower = msg.getData().getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
+            view.setIsFollower(isFollower);
         }
         else {
             handleException(new Exception("Internal Error: Improper call for observer to handle success"));

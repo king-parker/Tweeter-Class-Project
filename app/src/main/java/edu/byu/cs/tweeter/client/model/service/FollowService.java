@@ -12,6 +12,7 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
+import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -51,6 +52,13 @@ public class FollowService {
                 targetUser, new GetFollowersCountHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(followersCountTask);
+    }
+
+    public void isFollower(AuthToken authToken, User currUser, User selectedUser, Observer observer) {
+        IsFollowerTask isFollowerTask = new IsFollowerTask(authToken, currUser, selectedUser,
+                new IsFollowerHandler(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(isFollowerTask);
     }
 
     /**
@@ -161,6 +169,34 @@ public class FollowService {
                 observer.handleFailure(message);
             } else if (msg.getData().containsKey(GetFollowersCountTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) msg.getData().getSerializable(GetFollowersCountTask.EXCEPTION_KEY);
+
+                observer.handleException(ex);
+            }
+        }
+    }
+
+    /**
+     * Message handler (i.e., observer) for IsFollowerTask.
+     */
+    private class IsFollowerHandler extends Handler {
+
+        private Observer observer;
+
+        public IsFollowerHandler(Observer observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(IsFollowerTask.SUCCESS_KEY);
+            if (success) {
+                observer.handleSuccess(msg);
+            } else if (msg.getData().containsKey(IsFollowerTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(IsFollowerTask.MESSAGE_KEY);
+
+                observer.handleFailure(message);
+            } else if (msg.getData().containsKey(IsFollowerTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(IsFollowerTask.EXCEPTION_KEY);
 
                 observer.handleException(ex);
             }
