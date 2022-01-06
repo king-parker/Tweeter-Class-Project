@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.backgroundTask.GetFeedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetStoryTask;
+import edu.byu.cs.tweeter.client.backgroundTask.PostStatusTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -21,6 +22,12 @@ public class StatusService {
         void handleSuccess(List<Status> statuses, boolean hasMorePages);
         void handleFailure(String message);
         void handleException(Exception ex);
+    }
+
+    public void postStatus(AuthToken authToken, Status newStatus, Observer observer) {
+        PostStatusTask statusTask = new PostStatusTask(authToken, newStatus, new PostStatusHandler(observer));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(statusTask);
     }
 
     public void getFeed(AuthToken authToken, User targetUser,
@@ -40,13 +47,42 @@ public class StatusService {
     }
 
     /**
+     * Message handler (i.e., observer) for PostStatusTask.
+     */
+    private class PostStatusHandler extends Handler {
+
+        private Observer observer;
+
+        public PostStatusHandler(Observer observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(PostStatusTask.SUCCESS_KEY);
+            if (success) {
+                // TODO: Change handleSuccess method to take msg data bundle
+                observer.handleSuccess(null, false);
+            } else if (msg.getData().containsKey(PostStatusTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(PostStatusTask.MESSAGE_KEY);
+
+                observer.handleFailure(message);
+            } else if (msg.getData().containsKey(PostStatusTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(PostStatusTask.EXCEPTION_KEY);
+
+                observer.handleException(ex);
+            }
+        }
+    }
+
+    /**
      * Message handler (i.e., observer) for GetFeedTask.
      */
     private class GetFeedHandler extends Handler {
 
-        private StatusService.Observer observer;
+        private Observer observer;
 
-        public GetFeedHandler(StatusService.Observer observer) {
+        public GetFeedHandler(Observer observer) {
             this.observer = observer;
         }
 
@@ -76,9 +112,9 @@ public class StatusService {
      */
     private class GetStoryHandler extends Handler {
 
-        private StatusService.Observer observer;
+        private Observer observer;
 
-        public GetStoryHandler(StatusService.Observer observer) {
+        public GetStoryHandler(Observer observer) {
             this.observer = observer;
         }
 
