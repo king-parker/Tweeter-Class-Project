@@ -8,18 +8,22 @@ import androidx.annotation.NonNull;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import edu.byu.cs.tweeter.client.backgroundTask.FollowTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
+import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowService {
+    public static final String UPDATE_FOLLOW_KEY = "follow-unfollow";
 
     public interface Observer {
         void handleSuccess(@NonNull Message msg);
+        // TODO: Add parameters to failure and exception - message prefix, task tag
         void handleFailure(String message);
         void handleException(Exception ex);
     }
@@ -59,6 +63,18 @@ public class FollowService {
                 new IsFollowerHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(isFollowerTask);
+    }
+    
+    public void followUnfollow(AuthToken authToken, User selectedUser, boolean wasFollowing, Observer observer) {
+        if (wasFollowing) {
+            UnfollowTask unfollowTask = new UnfollowTask(authToken, selectedUser, new UnfollowHandler(observer));
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(unfollowTask);
+        } else {
+            FollowTask followTask = new FollowTask(authToken, selectedUser, new FollowHandler(observer));
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(followTask);
+        }
     }
 
     /**
@@ -200,6 +216,68 @@ public class FollowService {
 
                 observer.handleException(ex);
             }
+        }
+    }
+
+    /**
+     * Message handler (i.e., observer) for FollowTask.
+     */
+    private class FollowHandler extends Handler {
+        private Observer observer;
+
+        public FollowHandler(Observer observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(FollowTask.SUCCESS_KEY);
+            if (success) {
+                msg.getData().putBoolean(UPDATE_FOLLOW_KEY, false);
+                observer.handleSuccess(msg);
+            } else if (msg.getData().containsKey(FollowTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(FollowTask.MESSAGE_KEY);
+
+                observer.handleFailure(message);
+            } else if (msg.getData().containsKey(FollowTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(FollowTask.EXCEPTION_KEY);
+
+                observer.handleException(ex);
+            }
+
+            // TODO: Add parameters to failure and exception so follow button can be enabled properly
+//            followButton.setEnabled(true);
+        }
+    }
+
+    /**
+     * Message handler (i.e., observer) for UnfollowTask.
+     */
+    private class UnfollowHandler extends Handler {
+        private Observer observer;
+
+        public UnfollowHandler(Observer observer) {
+            this.observer = observer;
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            boolean success = msg.getData().getBoolean(UnfollowTask.SUCCESS_KEY);
+            if (success) {
+                msg.getData().putBoolean(UPDATE_FOLLOW_KEY, true);
+                observer.handleSuccess(msg);
+            } else if (msg.getData().containsKey(UnfollowTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(UnfollowTask.MESSAGE_KEY);
+
+                observer.handleFailure(message);
+            } else if (msg.getData().containsKey(UnfollowTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(UnfollowTask.EXCEPTION_KEY);
+
+                observer.handleException(ex);
+            }
+
+            // TODO: Add parameters to failure and exception so follow button can be enabled properly
+//            followButton.setEnabled(true);
         }
     }
 }

@@ -4,6 +4,9 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
@@ -20,6 +23,8 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
         void setFollowingCount(int count);
         void setFollowersCount(int count);
         void setIsFollower(boolean isFollower);
+        void updateFollowButton(boolean removed);
+        void enableFollowButton(boolean enable);
 
         void displayErrorMessage(String message);
         void clearErrorMessage();
@@ -59,6 +64,21 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
         new FollowService().isFollower(authToken, Cache.getInstance().getCurrUser(), selectedUser, this);
     }
 
+    public void followUnfollow(boolean wasFollowing) {
+        new FollowService().followUnfollow(authToken, selectedUser, wasFollowing, this);
+    }
+
+    public void updateSelectedUserFollowingAndFollowers() {
+        // TODO: Utilize this?
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        // Get count of most recently selected user's followers.
+        getFollowersCount();
+
+        // Get count of most recently selected user's followees (who they are following)
+        getFollowingCount();
+    }
+
     @Override
     public void handleSuccess(User user, AuthToken authToken) {
         view.clearInfoMessage();
@@ -68,18 +88,28 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
     @Override
     public void handleSuccess(@NonNull Message msg) {
         if (msg.getData().containsKey(GetFollowingCountTask.COUNT_KEY)) {
+            // Handle success of GetFollowingCountTask
             int count = msg.getData().getInt(GetFollowingCountTask.COUNT_KEY);
             view.setFollowingCount(count);
         }
         else if (msg.getData().containsKey(GetFollowersCountTask.COUNT_KEY)) {
+            // Handle success of GetFollowersCountTask
             int count = msg.getData().getInt(GetFollowersCountTask.COUNT_KEY);
             view.setFollowersCount(count);
         }
         else if (msg.getData().containsKey(IsFollowerTask.IS_FOLLOWER_KEY)) {
+            // Handle success of IsFollowerTask
             boolean isFollower = msg.getData().getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
             view.setIsFollower(isFollower);
         }
+        else if (msg.getData().containsKey(FollowService.UPDATE_FOLLOW_KEY)) {
+            // Handle success of FollowTask and UnfollowTask
+            updateSelectedUserFollowingAndFollowers();
+            boolean updateFollow = msg.getData().getBoolean(FollowService.UPDATE_FOLLOW_KEY);
+            view.updateFollowButton(updateFollow);
+        }
         else {
+            // Bundle did not have any expected data from a successful task
             handleException(new Exception("Internal Error: Improper call for observer to handle success"));
         }
     }
