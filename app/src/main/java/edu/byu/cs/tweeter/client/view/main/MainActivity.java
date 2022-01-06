@@ -36,41 +36,82 @@ import edu.byu.cs.tweeter.client.backgroundTask.FollowTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
-import edu.byu.cs.tweeter.client.backgroundTask.LogoutTask;
 import edu.byu.cs.tweeter.client.backgroundTask.PostStatusTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
+import edu.byu.cs.tweeter.client.presenter.MainPresenter;
 import edu.byu.cs.tweeter.client.view.login.LoginActivity;
 import edu.byu.cs.tweeter.client.view.login.StatusDialogFragment;
 import edu.byu.cs.tweeter.client.view.util.ImageUtils;
+import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
  * The main activity for the application. Contains tabs for feed, story, following, and followers.
  */
-public class MainActivity extends AppCompatActivity implements StatusDialogFragment.Observer {
+public class MainActivity extends AppCompatActivity implements StatusDialogFragment.Observer, MainPresenter.View {
 
     private static final String LOG_TAG = "MainActivity";
 
     public static final String CURRENT_USER_KEY = "CurrentUser";
 
-    private Toast logOutToast;
     private Toast postingToast;
-    private User selectedUser;
+    private Toast infoToast;
     private TextView followeeCount;
     private TextView followerCount;
     private Button followButton;
+
+    private MainPresenter presenter;
+
+    @Override
+    public void logoutUser() {
+        //Revert to login screen.
+        Intent intent = new Intent(this, LoginActivity.class);
+        //Clear everything so that the main activity is recreated with the login page.
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //Clear user data (cached data).
+        Cache.getInstance().clearCache();
+        startActivity(intent);
+    }
+
+    @Override
+    public void displayErrorMessage(String message) {
+        displayInfoMessage(message);
+    }
+
+    @Override
+    public void clearErrorMessage() {
+        clearInfoMessage();
+    }
+
+    @Override
+    public void displayInfoMessage(String message) {
+        clearInfoMessage();
+        infoToast = Toast.makeText(this, message, Toast.LENGTH_LONG);
+        infoToast.show();
+    }
+
+    @Override
+    public void clearInfoMessage() {
+        if (infoToast != null) {
+            infoToast.cancel();
+            infoToast = null;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        selectedUser = (User) getIntent().getSerializableExtra(CURRENT_USER_KEY);
+        User selectedUser = (User) getIntent().getSerializableExtra(CURRENT_USER_KEY);
         if (selectedUser == null) {
             throw new RuntimeException("User not passed to activity");
         }
+        AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
+        presenter = new MainPresenter(this, authToken, selectedUser);
+
 
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), selectedUser);
         ViewPager viewPager = findViewById(R.id.view_pager);
@@ -89,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
             }
         });
 
-        updateSelectedUserFollowingAndFollowers();
+        updateSelectedUserFollowingAndFollowers(selectedUser);
 
         TextView userName = findViewById(R.id.userName);
         userName.setText(selectedUser.getName());
@@ -125,14 +166,14 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
 
                 if (followButton.getText().toString().equals(v.getContext().getString(R.string.following))) {
                     UnfollowTask unfollowTask = new UnfollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                            selectedUser, new UnfollowHandler());
+                            selectedUser, new UnfollowHandler(selectedUser));
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     executor.execute(unfollowTask);
 
                     Toast.makeText(MainActivity.this, "Removing " + selectedUser.getName() + "...", Toast.LENGTH_LONG).show();
                 } else {
                     FollowTask followTask = new FollowTask(Cache.getInstance().getCurrUserAuthToken(),
-                            selectedUser, new FollowHandler());
+                            selectedUser, new FollowHandler(selectedUser));
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     executor.execute(followTask);
 
@@ -152,27 +193,12 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.logoutMenu) {
-            logOutToast = Toast.makeText(this, "Logging Out...", Toast.LENGTH_LONG);
-            logOutToast.show();
-
-            LogoutTask logoutTask = new LogoutTask(Cache.getInstance().getCurrUserAuthToken(), new LogoutHandler());
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(logoutTask);
+            presenter.logout();
 
             return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
-    }
-
-    public void logoutUser() {
-        //Revert to login screen.
-        Intent intent = new Intent(this, LoginActivity.class);
-        //Clear everything so that the main activity is recreated with the login page.
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        //Clear user data (cached data).
-        Cache.getInstance().clearCache();
-        startActivity(intent);
     }
 
     @Override
@@ -256,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
         }
     }
 
-    public void updateSelectedUserFollowingAndFollowers() {
+    public void updateSelectedUserFollowingAndFollowers(User selectedUser) {
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         // Get count of most recently selected user's followers.
@@ -279,25 +305,6 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
             followButton.setText(R.string.following);
             followButton.setBackgroundColor(getResources().getColor(R.color.white));
             followButton.setTextColor(getResources().getColor(R.color.lightGray));
-        }
-    }
-
-    // LogoutHandler
-
-    private class LogoutHandler extends Handler {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LogoutTask.SUCCESS_KEY);
-            if (success) {
-                logOutToast.cancel();
-                logoutUser();
-            } else if (msg.getData().containsKey(LogoutTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LogoutTask.MESSAGE_KEY);
-                Toast.makeText(MainActivity.this, "Failed to logout: " + message, Toast.LENGTH_LONG).show();
-            } else if (msg.getData().containsKey(LogoutTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LogoutTask.EXCEPTION_KEY);
-                Toast.makeText(MainActivity.this, "Failed to logout because of exception: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-            }
         }
     }
 
@@ -370,11 +377,18 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
     // FollowHandler
 
     private class FollowHandler extends Handler {
+
+        private User user;
+
+        public FollowHandler(User user) {
+            this.user = user;
+        }
+
         @Override
         public void handleMessage(@NonNull Message msg) {
             boolean success = msg.getData().getBoolean(FollowTask.SUCCESS_KEY);
             if (success) {
-                updateSelectedUserFollowingAndFollowers();
+                updateSelectedUserFollowingAndFollowers(user);
                 updateFollowButton(false);
             } else if (msg.getData().containsKey(FollowTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(FollowTask.MESSAGE_KEY);
@@ -391,11 +405,18 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
     // UnfollowHandler
 
     private class UnfollowHandler extends Handler {
+
+        private User user;
+
+        public UnfollowHandler(User user) {
+            this.user = user;
+        }
+
         @Override
         public void handleMessage(@NonNull Message msg) {
             boolean success = msg.getData().getBoolean(UnfollowTask.SUCCESS_KEY);
             if (success) {
-                updateSelectedUserFollowingAndFollowers();
+                updateSelectedUserFollowingAndFollowers(user);
                 updateFollowButton(true);
             } else if (msg.getData().containsKey(UnfollowTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(UnfollowTask.MESSAGE_KEY);
