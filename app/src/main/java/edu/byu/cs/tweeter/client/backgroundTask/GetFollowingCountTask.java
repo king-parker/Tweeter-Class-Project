@@ -15,7 +15,7 @@ public class GetFollowingCountTask implements Runnable {
     private static final String LOG_TAG = "LogoutTask";
 
     public static final String SUCCESS_KEY = "success";
-    public static final String COUNT_KEY = "count";
+    public static final String COUNT_KEY = "followingCount";
     public static final String MESSAGE_KEY = "message";
     public static final String EXCEPTION_KEY = "exception";
 
