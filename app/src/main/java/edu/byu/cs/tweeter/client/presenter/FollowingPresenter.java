@@ -1,7 +1,12 @@
 package edu.byu.cs.tweeter.client.presenter;
 
+import android.os.Message;
+
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -50,7 +55,20 @@ public class FollowingPresenter implements FollowService.Observer, UserService.O
     }
 
     @Override
-    public void handleSuccess(List<User> users, boolean hasMorePages) {
+    public void handleSuccess(@NonNull Message msg) {
+        if (msg.getData().containsKey(GetFollowingTask.FOLLOWEES_KEY)
+                && msg.getData().containsKey(GetFollowingTask.MORE_PAGES_KEY)) {
+            List<User> followees = (List<User>) msg.getData().getSerializable(GetFollowingTask.FOLLOWEES_KEY);
+            boolean hasMorePages = msg.getData().getBoolean(GetFollowingTask.MORE_PAGES_KEY);
+
+            updateItems(followees, hasMorePages);
+        }
+        else {
+            handleException(new Exception("Internal Error: Improper call for observer to handle success"));
+        }
+    }
+
+    private void updateItems(List<User> users, boolean hasMorePages) {
         this.hasMorePages = hasMorePages;
         lastFollowee = (users.size() > 0) ? users.get(users.size() - 1) : null;
         isLoading = false;
@@ -67,12 +85,12 @@ public class FollowingPresenter implements FollowService.Observer, UserService.O
     @Override
     public void handleFailure(String message) {
         isLoading = false;
-        view.displayErrorMessage("Login failed: " + message);
+        view.displayErrorMessage(message);
     }
 
     @Override
     public void handleException(Exception ex) {
         isLoading = false;
-        view.displayErrorMessage("Login failed: " + ex.getMessage());
+        view.displayErrorMessage(ex.getMessage());
     }
 }

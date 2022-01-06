@@ -5,7 +5,6 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,7 +16,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class FollowService {
 
     public interface Observer {
-        void handleSuccess(List<User> users, boolean hasMorePages);
+        void handleSuccess(@NonNull Message msg);
         void handleFailure(String message);
         void handleException(Exception ex);
     }
@@ -53,10 +52,7 @@ public class FollowService {
 
             boolean success = msg.getData().getBoolean(GetFollowingTask.SUCCESS_KEY);
             if (success) {
-                List<User> followees = (List<User>) msg.getData().getSerializable(GetFollowingTask.FOLLOWEES_KEY);
-                boolean hasMorePages = msg.getData().getBoolean(GetFollowingTask.MORE_PAGES_KEY);
-
-                observer.handleSuccess(followees, hasMorePages);
+                observer.handleSuccess(msg);
             } else if (msg.getData().containsKey(GetFollowingTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetFollowingTask.MESSAGE_KEY);
 
@@ -84,10 +80,7 @@ public class FollowService {
 
             boolean success = msg.getData().getBoolean(GetFollowersTask.SUCCESS_KEY);
             if (success) {
-                List<User> followers = (List<User>) msg.getData().getSerializable(GetFollowersTask.FOLLOWERS_KEY);
-                boolean hasMorePages = msg.getData().getBoolean(GetFollowersTask.MORE_PAGES_KEY);
-
-                observer.handleSuccess(followers, hasMorePages);
+                observer.handleSuccess(msg);
             } else if (msg.getData().containsKey(GetFollowersTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetFollowersTask.MESSAGE_KEY);
 
