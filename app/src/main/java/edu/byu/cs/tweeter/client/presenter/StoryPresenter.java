@@ -1,0 +1,79 @@
+package edu.byu.cs.tweeter.client.presenter;
+
+import java.util.List;
+
+import edu.byu.cs.tweeter.client.model.service.StatusService;
+import edu.byu.cs.tweeter.client.model.service.UserService;
+import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.Status;
+import edu.byu.cs.tweeter.model.domain.User;
+
+public class StoryPresenter implements StatusService.Observer, UserService.Observer {
+
+    public interface View {
+        void addItems(List<Status> statuses);
+        void setLoading(boolean value);
+        void navigateToUser(User user);
+
+        void displayErrorMessage(String message);
+        void clearErrorMessage();
+
+        void displayInfoMessage(String message);
+        void clearInfoMessage();
+    }
+
+    private static final int PAGE_SIZE = 10;
+
+    private StoryPresenter.View view;
+    private AuthToken authToken;
+    private User targetUser;
+    private Status lastStatus;
+    private boolean hasMorePages = true;
+    private boolean isLoading = false;
+
+    public StoryPresenter(StoryPresenter.View view, AuthToken authToken, User targetUser) {
+        this.view = view;
+        this.authToken = authToken;
+        this.targetUser = targetUser;
+    }
+
+    public void getUser(String alias) {
+        new UserService().getUser(authToken, alias, this);
+    }
+
+    public void loadMoreItems() {
+        if (!isLoading && hasMorePages) {   // This guard is important for avoiding a race condition in the scrolling code.
+            isLoading = true;
+            view.setLoading(true);
+
+            new StatusService().getStory(authToken, targetUser, PAGE_SIZE, lastStatus, this);
+        }
+    }
+
+    @Override
+    public void handleSuccess(List<Status> statuses, boolean hasMorePages) {
+        this.hasMorePages = hasMorePages;
+        lastStatus = (statuses.size() > 0) ? statuses.get(statuses.size() - 1) : null;
+        isLoading = false;
+        view.setLoading(false);
+        view.addItems(statuses);
+    }
+
+    @Override
+    public void handleSuccess(User user, AuthToken authToken) {
+        view.navigateToUser(user);
+        view.displayInfoMessage("Getting user's profile...");
+    }
+
+    @Override
+    public void handleFailure(String message) {
+        isLoading = false;
+        view.displayErrorMessage("Login failed: " + message);
+    }
+
+    @Override
+    public void handleException(Exception ex) {
+        isLoading = false;
+        view.displayErrorMessage("Login failed: " + ex.getMessage());
+    }
+}
