@@ -8,7 +8,7 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class StoryPresenter implements StatusService.Observer, UserService.Observer {
+public class StoryPresenter implements StatusService.Observer, UserService.GetUserObserver {
 
     public interface View {
         void addItems(List<Status> statuses);
@@ -60,8 +60,8 @@ public class StoryPresenter implements StatusService.Observer, UserService.Obser
     }
 
     @Override
-    public void handleSuccess(User user, AuthToken authToken) {
-        view.navigateToUser(user);
+    public void handleSuccess(User selectedUser) {
+        view.navigateToUser(selectedUser);
         view.displayInfoMessage("Getting user's profile...");
     }
 
