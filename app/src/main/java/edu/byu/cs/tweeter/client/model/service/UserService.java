@@ -5,9 +5,7 @@ import android.os.Message;
 
 import androidx.annotation.NonNull;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
+import edu.byu.cs.tweeter.client.backgroundTask.BackgroundTaskUtils;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.backgroundTask.LoginTask;
 import edu.byu.cs.tweeter.client.backgroundTask.LogoutTask;
@@ -29,27 +27,54 @@ public class UserService {
         RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password,
                 imageBytesBase64, new RegisterHandler(observer));
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(registerTask);
+        BackgroundTaskUtils.executeTask(registerTask);
     }
 
-    public void login(String alias, String password, Observer observer) {
+    public interface LoginObserver extends ServiceObserver {
+        void handleSuccess(User loggedInUser, AuthToken authToken);
+    }
+
+    public void login(String alias, String password, LoginObserver observer) {
         // Run a LoginTask to login the user
         LoginTask loginTask = new LoginTask(alias, password, new LoginHandler(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(loginTask);
+
+        BackgroundTaskUtils.executeTask(loginTask);
+    }
+
+    /**
+     * Message handler (i.e., observer) for LoginTask
+     */
+    private class LoginHandler extends BackgroundTaskHandler<LoginObserver> {
+
+//        private Observer observer;
+
+        public LoginHandler(LoginObserver observer) {
+            super(observer);
+        }
+
+        @Override
+        protected void handleSuccessMessage(Message msg) {
+            User loggedInUser = (User) msg.getData().getSerializable(LoginTask.USER_KEY);
+            AuthToken authToken = (AuthToken) msg.getData().getSerializable(LoginTask.AUTH_TOKEN_KEY);
+
+            // Cache user session information
+            Cache.getInstance().setCurrUser(loggedInUser);
+            Cache.getInstance().setCurrUserAuthToken(authToken);
+
+            observer.handleSuccess(loggedInUser, authToken);
+        }
     }
 
     public void logout(AuthToken authToken, Observer observer) {
         LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(logoutTask);
+
+        BackgroundTaskUtils.executeTask(logoutTask);
     }
 
     public void getUser(AuthToken authToken, String alias, Observer observer) {
         GetUserTask getUserTask = new GetUserTask(authToken, alias, new GetUserHandler(observer));
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(getUserTask);
+
+        BackgroundTaskUtils.executeTask(getUserTask);
     }
 
     /**
@@ -81,41 +106,6 @@ public class UserService {
                 observer.handleFailure(message);
             } else if (msg.getData().containsKey(RegisterTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) msg.getData().getSerializable(RegisterTask.EXCEPTION_KEY);
-
-                observer.handleException(ex);
-            }
-        }
-    }
-
-    /**
-     * Message handler (i.e., observer) for LoginTask
-     */
-    private class LoginHandler extends Handler {
-
-        private Observer observer;
-
-        public LoginHandler(Observer observer) {
-            this.observer = observer;
-        }
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LoginTask.SUCCESS_KEY);
-            if (success) {
-                User loggedInUser = (User) msg.getData().getSerializable(LoginTask.USER_KEY);
-                AuthToken authToken = (AuthToken) msg.getData().getSerializable(LoginTask.AUTH_TOKEN_KEY);
-
-                // Cache user session information
-                Cache.getInstance().setCurrUser(loggedInUser);
-                Cache.getInstance().setCurrUserAuthToken(authToken);
-
-                observer.handleSuccess(loggedInUser, authToken);
-            } else if (msg.getData().containsKey(LoginTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LoginTask.MESSAGE_KEY);
-
-                observer.handleFailure(message);
-            } else if (msg.getData().containsKey(LoginTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LoginTask.EXCEPTION_KEY);
 
                 observer.handleException(ex);
             }
