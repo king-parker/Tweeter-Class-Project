@@ -23,7 +23,7 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class MainPresenter implements UserService.Observer, FollowService.Observer, StatusService.Observer {
+public class MainPresenter implements UserService.LogoutObserver, FollowService.Observer, StatusService.Observer {
 
     public interface View {
         void logoutUser();
@@ -157,9 +157,10 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
     }
 
     @Override
-    public void handleSuccess(User user, AuthToken authToken) {
-        view.clearInfoMessage();
+    public void handleSuccess() {
         view.logoutUser();
+        view.clearInfoMessage();
+        view.displayInfoMessage("Logged out");
     }
 
     @Override

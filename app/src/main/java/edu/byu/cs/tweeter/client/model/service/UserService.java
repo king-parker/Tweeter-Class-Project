@@ -1,9 +1,6 @@
 package edu.byu.cs.tweeter.client.model.service;
 
-import android.os.Handler;
 import android.os.Message;
-
-import androidx.annotation.NonNull;
 
 import edu.byu.cs.tweeter.client.backgroundTask.BackgroundTaskUtils;
 import edu.byu.cs.tweeter.client.backgroundTask.GetUserTask;
@@ -94,7 +91,11 @@ public class UserService {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Logout Service ~~~~~~~~~~~~~~~~~~~~~~~~~
-    public void logout(AuthToken authToken, Observer observer) {
+    public interface LogoutObserver extends ServiceObserver {
+        void handleSuccess();
+    }
+
+    public void logout(AuthToken authToken, LogoutObserver observer) {
         LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
 
         BackgroundTaskUtils.executeTask(logoutTask);
@@ -103,28 +104,15 @@ public class UserService {
     /**
      * Message handler (i.e., observer) for LogoutTask.
      */
-    private class LogoutHandler extends Handler {
+    private class LogoutHandler extends BackgroundTaskHandler<LogoutObserver> {
 
-        private Observer observer;
-
-        public LogoutHandler(Observer observer) {
-            this.observer = observer;
+        public LogoutHandler(LogoutObserver observer) {
+            super(observer);
         }
 
         @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(LogoutTask.SUCCESS_KEY);
-            if (success) {
-                observer.handleSuccess(null, null);
-            } else if (msg.getData().containsKey(LogoutTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(LogoutTask.MESSAGE_KEY);
-
-                observer.handleFailure(message);
-            } else if (msg.getData().containsKey(LogoutTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(LogoutTask.EXCEPTION_KEY);
-
-                observer.handleException(ex);
-            }
+        protected void handleSuccessMessage(Message msg) {
+            observer.handleSuccess();
         }
     }
 
