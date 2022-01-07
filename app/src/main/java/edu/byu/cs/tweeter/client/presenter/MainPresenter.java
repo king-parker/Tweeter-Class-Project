@@ -1,9 +1,5 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import android.os.Message;
-
-import androidx.annotation.NonNull;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -13,7 +9,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.model.service.StatusService;
@@ -22,7 +17,9 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class MainPresenter implements UserService.LogoutObserver, FollowService.Observer, FollowService.FollowingCountObserver, FollowService.FollowersCountObserver, StatusService.Observer {
+public class MainPresenter implements UserService.LogoutObserver, FollowService.FollowingCountObserver,
+        FollowService.FollowersCountObserver, FollowService.IsFollowerObserver,
+        FollowService.FollowUnfollowObserver, StatusService.Observer {
 
     public interface View {
         void logoutUser();
@@ -169,25 +166,6 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
     }
 
     @Override
-    public void handleSuccess(@NonNull Message msg) {
-        if (msg.getData().containsKey(IsFollowerTask.IS_FOLLOWER_KEY)) {
-            // Handle success of IsFollowerTask
-            boolean isFollower = msg.getData().getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
-            view.setIsFollower(isFollower);
-        }
-        else if (msg.getData().containsKey(FollowService.UPDATE_FOLLOW_KEY)) {
-            // Handle success of FollowTask and UnfollowTask
-            updateSelectedUserFollowingAndFollowers();
-            boolean updateFollow = msg.getData().getBoolean(FollowService.UPDATE_FOLLOW_KEY);
-            view.updateFollowButton(updateFollow);
-        }
-        else {
-            // Bundle did not have any expected data from a successful task
-            handleException(new Exception("Internal Error: Improper call for observer to handle success"));
-        }
-    }
-
-    @Override
     public void handleSuccessFollowing(int count) {
         view.setFollowingCount(count);
     }
@@ -195,6 +173,16 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
     @Override
     public void handleSuccessFollowers(int count) {
         view.setFollowersCount(count);
+    }
+
+    @Override
+    public void handleSuccessIsFollower(boolean isFollower) {
+        view.setIsFollower(isFollower);
+    }
+
+    @Override
+    public void handleSuccessFollowUnfollow(boolean wasFollowing) {
+        view.updateFollowButton(wasFollowing);
     }
 
     @Override
