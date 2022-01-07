@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import java.util.List;
 
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersTask;
+import edu.byu.cs.tweeter.client.backgroundTask.PagedTask;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -56,10 +56,10 @@ public class FollowersPresenter implements FollowService.Observer, UserService.O
 
     @Override
     public void handleSuccess(@NonNull Message msg) {
-        if (msg.getData().containsKey(GetFollowersTask.FOLLOWERS_KEY)
-                && msg.getData().containsKey(GetFollowersTask.MORE_PAGES_KEY)) {
-            List<User> followers = (List<User>) msg.getData().getSerializable(GetFollowersTask.FOLLOWERS_KEY);
-            boolean hasMorePages = msg.getData().getBoolean(GetFollowersTask.MORE_PAGES_KEY);
+        if (msg.getData().containsKey(PagedTask.ITEMS_KEY)
+                && msg.getData().containsKey(PagedTask.MORE_PAGES_KEY)) {
+            List<User> followers = (List<User>) msg.getData().getSerializable(PagedTask.ITEMS_KEY);
+            boolean hasMorePages = msg.getData().getBoolean(PagedTask.MORE_PAGES_KEY);
 
             updateItems(followers, hasMorePages);
         }

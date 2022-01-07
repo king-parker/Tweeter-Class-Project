@@ -147,8 +147,6 @@ public class FollowService {
         public void handleMessage(@NonNull Message msg) {
             boolean success = msg.getData().getBoolean(GetFollowingCountTask.SUCCESS_KEY);
             if (success) {
-                int count = msg.getData().getInt(GetFollowingCountTask.COUNT_KEY);
-
                 observer.handleSuccess(msg);
             } else if (msg.getData().containsKey(GetFollowingCountTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetFollowingCountTask.MESSAGE_KEY);
@@ -176,8 +174,6 @@ public class FollowService {
         public void handleMessage(@NonNull Message msg) {
             boolean success = msg.getData().getBoolean(GetFollowersCountTask.SUCCESS_KEY);
             if (success) {
-                int count = msg.getData().getInt(GetFollowersCountTask.COUNT_KEY);
-
                 observer.handleSuccess(msg);
             } else if (msg.getData().containsKey(GetFollowersCountTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetFollowersCountTask.MESSAGE_KEY);

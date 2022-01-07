@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowersCountTask;
-import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
+import edu.byu.cs.tweeter.client.backgroundTask.GetCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
@@ -171,15 +170,16 @@ public class MainPresenter implements UserService.Observer, FollowService.Observ
 
     @Override
     public void handleSuccess(@NonNull Message msg) {
-        if (msg.getData().containsKey(GetFollowingCountTask.COUNT_KEY)) {
-            // Handle success of GetFollowingCountTask
-            int count = msg.getData().getInt(GetFollowingCountTask.COUNT_KEY);
-            view.setFollowingCount(count);
-        }
-        else if (msg.getData().containsKey(GetFollowersCountTask.COUNT_KEY)) {
-            // Handle success of GetFollowersCountTask
-            int count = msg.getData().getInt(GetFollowersCountTask.COUNT_KEY);
-            view.setFollowersCount(count);
+        if (msg.getData().containsKey(GetCountTask.FOLLOWING_KEY)) {
+            int count = msg.getData().getInt(GetCountTask.COUNT_KEY);
+            if (msg.getData().getBoolean(GetCountTask.FOLLOWING_KEY)) {
+                // Handle success of GetFollowingCountTask
+                view.setFollowingCount(count);
+            }
+            else {
+                // Handle success of GetFollowersCountTask
+                view.setFollowersCount(count);
+            }
         }
         else if (msg.getData().containsKey(IsFollowerTask.IS_FOLLOWER_KEY)) {
             // Handle success of IsFollowerTask

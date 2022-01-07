@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.backgroundTask.GetFeedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetStoryTask;
+import edu.byu.cs.tweeter.client.backgroundTask.PagedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.PostStatusTask;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -89,18 +90,18 @@ public class StatusService {
         @Override
         public void handleMessage(@NonNull Message msg) {
 
-            boolean success = msg.getData().getBoolean(GetFeedTask.SUCCESS_KEY);
+            boolean success = msg.getData().getBoolean(PagedTask.SUCCESS_KEY);
             if (success) {
-                List<Status> statuses = (List<Status>) msg.getData().getSerializable(GetFeedTask.STATUSES_KEY);
-                boolean hasMorePages = msg.getData().getBoolean(GetFeedTask.MORE_PAGES_KEY);
+                List<Status> statuses = (List<Status>) msg.getData().getSerializable(PagedTask.ITEMS_KEY);
+                boolean hasMorePages = msg.getData().getBoolean(PagedTask.MORE_PAGES_KEY);
 
                 observer.handleSuccess(statuses, hasMorePages);
-            } else if (msg.getData().containsKey(GetFeedTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(GetFeedTask.MESSAGE_KEY);
+            } else if (msg.getData().containsKey(PagedTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(PagedTask.MESSAGE_KEY);
 
                 observer.handleFailure(message);
-            } else if (msg.getData().containsKey(GetFeedTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(GetFeedTask.EXCEPTION_KEY);
+            } else if (msg.getData().containsKey(PagedTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(PagedTask.EXCEPTION_KEY);
 
                 observer.handleException(ex);
             }
@@ -121,18 +122,18 @@ public class StatusService {
         @Override
         public void handleMessage(@NonNull Message msg) {
 
-            boolean success = msg.getData().getBoolean(GetStoryTask.SUCCESS_KEY);
+            boolean success = msg.getData().getBoolean(PagedTask.SUCCESS_KEY);
             if (success) {
-                List<Status> statuses = (List<Status>) msg.getData().getSerializable(GetStoryTask.STATUSES_KEY);
-                boolean hasMorePages = msg.getData().getBoolean(GetStoryTask.MORE_PAGES_KEY);
+                List<Status> statuses = (List<Status>) msg.getData().getSerializable(PagedTask.ITEMS_KEY);
+                boolean hasMorePages = msg.getData().getBoolean(PagedTask.MORE_PAGES_KEY);
 
                 observer.handleSuccess(statuses, hasMorePages);
-            } else if (msg.getData().containsKey(GetStoryTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(GetStoryTask.MESSAGE_KEY);
+            } else if (msg.getData().containsKey(PagedTask.MESSAGE_KEY)) {
+                String message = msg.getData().getString(PagedTask.MESSAGE_KEY);
 
                 observer.handleFailure(message);
-            } else if (msg.getData().containsKey(GetStoryTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(GetStoryTask.EXCEPTION_KEY);
+            } else if (msg.getData().containsKey(PagedTask.EXCEPTION_KEY)) {
+                Exception ex = (Exception) msg.getData().getSerializable(PagedTask.EXCEPTION_KEY);
 
                 observer.handleException(ex);
             }
