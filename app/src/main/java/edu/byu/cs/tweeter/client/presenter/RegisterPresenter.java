@@ -11,7 +11,7 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter implements UserService.Observer {
+public class RegisterPresenter implements UserService.RegisterObserver {
 
     public interface View {
         void navigateToUser(User user);
@@ -85,7 +85,6 @@ public class RegisterPresenter implements UserService.Observer {
 
     @Override
     public void handleSuccess(User user, AuthToken authToken) {
-
         view.navigateToUser(user);
         view.clearErrorMessage();
         view.displayInfoMessage("Hello " + user.getName());

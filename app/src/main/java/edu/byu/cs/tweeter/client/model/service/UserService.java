@@ -22,14 +22,42 @@ public class UserService {
         void handleException(Exception ex);
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Register Service ~~~~~~~~~~~~~~~~~~~~~~~~~
+    public interface RegisterObserver extends ServiceObserver {
+        void handleSuccess(User registeredUser, AuthToken authToken);
+    }
+
     public void register (String firstName, String lastName, String alias, String password,
-                          String imageBytesBase64, Observer observer) {
+                          String imageBytesBase64, RegisterObserver observer) {
         RegisterTask registerTask = new RegisterTask(firstName, lastName, alias, password,
                 imageBytesBase64, new RegisterHandler(observer));
 
         BackgroundTaskUtils.executeTask(registerTask);
     }
 
+    /**
+     * Message handler (i.e., observer) for RegisterTask
+     */
+    private class RegisterHandler extends BackgroundTaskHandler<RegisterObserver> {
+
+        public RegisterHandler(RegisterObserver observer) {
+            super(observer);
+        }
+
+        @Override
+        protected void handleSuccessMessage(Message msg) {
+            User registeredUser = (User) msg.getData().getSerializable(RegisterTask.USER_KEY);
+            AuthToken authToken = (AuthToken) msg.getData().getSerializable(RegisterTask.AUTH_TOKEN_KEY);
+
+            // Cache user session information
+            Cache.getInstance().setCurrUser(registeredUser);
+            Cache.getInstance().setCurrUserAuthToken(authToken);
+
+            observer.handleSuccess(registeredUser, authToken);
+        }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Login Service ~~~~~~~~~~~~~~~~~~~~~~~~~
     public interface LoginObserver extends ServiceObserver {
         void handleSuccess(User loggedInUser, AuthToken authToken);
     }
@@ -65,51 +93,11 @@ public class UserService {
         }
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Logout Service ~~~~~~~~~~~~~~~~~~~~~~~~~
     public void logout(AuthToken authToken, Observer observer) {
         LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
 
         BackgroundTaskUtils.executeTask(logoutTask);
-    }
-
-    public void getUser(AuthToken authToken, String alias, Observer observer) {
-        GetUserTask getUserTask = new GetUserTask(authToken, alias, new GetUserHandler(observer));
-
-        BackgroundTaskUtils.executeTask(getUserTask);
-    }
-
-    /**
-     * Message handler (i.e., observer) for RegisterTask
-     */
-    private class RegisterHandler extends Handler {
-
-        private  Observer observer;
-
-        public RegisterHandler(Observer observer) {
-            this.observer = observer;
-        }
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            boolean success = msg.getData().getBoolean(RegisterTask.SUCCESS_KEY);
-            if (success) {
-                User registeredUser = (User) msg.getData().getSerializable(RegisterTask.USER_KEY);
-                AuthToken authToken = (AuthToken) msg.getData().getSerializable(RegisterTask.AUTH_TOKEN_KEY);
-
-                // Cache user session information
-                Cache.getInstance().setCurrUser(registeredUser);
-                Cache.getInstance().setCurrUserAuthToken(authToken);
-
-                observer.handleSuccess(registeredUser, authToken);
-            } else if (msg.getData().containsKey(RegisterTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(RegisterTask.MESSAGE_KEY);
-
-                observer.handleFailure(message);
-            } else if (msg.getData().containsKey(RegisterTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(RegisterTask.EXCEPTION_KEY);
-
-                observer.handleException(ex);
-            }
-        }
     }
 
     /**
@@ -138,6 +126,13 @@ public class UserService {
                 observer.handleException(ex);
             }
         }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Get User Service ~~~~~~~~~~~~~~~~~~~~~~~~~
+    public void getUser(AuthToken authToken, String alias, Observer observer) {
+        GetUserTask getUserTask = new GetUserTask(authToken, alias, new GetUserHandler(observer));
+
+        BackgroundTaskUtils.executeTask(getUserTask);
     }
 
     /**
