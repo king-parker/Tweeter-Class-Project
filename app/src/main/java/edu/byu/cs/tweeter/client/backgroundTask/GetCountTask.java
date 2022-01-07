@@ -38,6 +38,5 @@ public abstract class GetCountTask extends  AuthorizedTask {
     @Override
     protected void loadBundle(Bundle msgBundle) {
         msgBundle.putInt(COUNT_KEY, count);
-        msgBundle.putBoolean(FOLLOWING_KEY, forFollowing);
     }
 }

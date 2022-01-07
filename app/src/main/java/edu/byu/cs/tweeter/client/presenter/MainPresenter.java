@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.byu.cs.tweeter.client.backgroundTask.GetCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
@@ -23,7 +22,7 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class MainPresenter implements UserService.LogoutObserver, FollowService.Observer, StatusService.Observer {
+public class MainPresenter implements UserService.LogoutObserver, FollowService.Observer, FollowService.FollowingCountObserver, FollowService.FollowersCountObserver, StatusService.Observer {
 
     public interface View {
         void logoutUser();
@@ -171,18 +170,7 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
 
     @Override
     public void handleSuccess(@NonNull Message msg) {
-        if (msg.getData().containsKey(GetCountTask.FOLLOWING_KEY)) {
-            int count = msg.getData().getInt(GetCountTask.COUNT_KEY);
-            if (msg.getData().getBoolean(GetCountTask.FOLLOWING_KEY)) {
-                // Handle success of GetFollowingCountTask
-                view.setFollowingCount(count);
-            }
-            else {
-                // Handle success of GetFollowersCountTask
-                view.setFollowersCount(count);
-            }
-        }
-        else if (msg.getData().containsKey(IsFollowerTask.IS_FOLLOWER_KEY)) {
+        if (msg.getData().containsKey(IsFollowerTask.IS_FOLLOWER_KEY)) {
             // Handle success of IsFollowerTask
             boolean isFollower = msg.getData().getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
             view.setIsFollower(isFollower);
@@ -197,6 +185,16 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
             // Bundle did not have any expected data from a successful task
             handleException(new Exception("Internal Error: Improper call for observer to handle success"));
         }
+    }
+
+    @Override
+    public void handleSuccessFollowing(int count) {
+        view.setFollowingCount(count);
+    }
+
+    @Override
+    public void handleSuccessFollowers(int count) {
+        view.setFollowersCount(count);
     }
 
     @Override
