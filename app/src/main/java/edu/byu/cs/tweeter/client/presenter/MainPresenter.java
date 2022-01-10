@@ -6,8 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
@@ -19,7 +17,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class MainPresenter implements UserService.LogoutObserver, FollowService.FollowingCountObserver,
         FollowService.FollowersCountObserver, FollowService.IsFollowerObserver,
-        FollowService.FollowUnfollowObserver, StatusService.Observer {
+        FollowService.FollowUnfollowObserver, StatusService.PostStatusObserver {
 
     public interface View {
         void logoutUser();
@@ -75,17 +73,6 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
         Status newStatus = new Status(post, Cache.getInstance().getCurrUser(),
                 getFormattedDateTime(), parseURLs(post), parseMentions(post));
         new StatusService().postStatus(authToken, newStatus, this);
-    }
-
-    public void updateSelectedUserFollowingAndFollowers() {
-        // TODO: Utilize this?
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-
-        // Get count of most recently selected user's followers.
-        getFollowersCount();
-
-        // Get count of most recently selected user's followees (who they are following)
-        getFollowingCount();
     }
 
     public String getFormattedDateTime() throws ParseException {
@@ -160,7 +147,7 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
     }
 
     @Override
-    public void handleSuccess(List<Status> statuses, boolean hasMorePages) {
+    public void handlePostSuccess() {
         view.clearInfoMessage();
         view.displayInfoMessage("Successfully Posted!");
     }
