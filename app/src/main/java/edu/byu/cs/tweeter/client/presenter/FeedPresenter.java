@@ -2,13 +2,14 @@ package edu.byu.cs.tweeter.client.presenter;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.model.service.PagedServiceObserver;
 import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class FeedPresenter implements StatusService.Observer, UserService.GetUserObserver {
+public class FeedPresenter implements PagedServiceObserver<Status>, UserService.GetUserObserver {
 
     public interface View {
         void addItems(List<Status> statuses);
