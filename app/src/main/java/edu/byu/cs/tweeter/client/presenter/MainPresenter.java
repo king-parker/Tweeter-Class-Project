@@ -17,7 +17,7 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class MainPresenter implements UserService.LogoutObserver, FollowService.FollowingCountObserver,
+public class MainPresenter extends BasePresenter<MainPresenter.View> implements UserService.LogoutObserver, FollowService.FollowingCountObserver,
         FollowService.FollowersCountObserver, FollowService.IsFollowerObserver,
         FollowService.FollowUnfollowObserver, StatusService.PostStatusObserver {
 
@@ -30,12 +30,12 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
         void enableFollowButton(boolean enable);
     }
 
-    private View view;
     private User selectedUser;
     private AuthToken authToken;
 
     public MainPresenter(View view, AuthToken authToken, User selectedUser) {
-        this.view = view;
+        super(view);
+
         this.authToken = authToken;
         this.selectedUser = selectedUser;
     }

@@ -11,16 +11,14 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter implements UserService.RegisterObserver {
+public class RegisterPresenter extends BasePresenter<RegisterPresenter.View> implements UserService.RegisterObserver {
 
     public interface View extends PresenterView {
         void navigateToUser(User user);
     }
 
-    private View view;
-
     public RegisterPresenter(View view) {
-        this.view = view;
+        super(view);
     }
 
     public void register(String firstName, String lastName, String alias, String password,
