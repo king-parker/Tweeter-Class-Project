@@ -10,16 +10,10 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowersPresenter implements PagedServiceObserver<User>, UserService.GetUserObserver {
 
-    public interface View {
+    public interface View extends PresenterView {
         void addItems(List<User> followers);
         void setLoading(boolean value);
         void navigateToUser(User user);
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
     }
 
     private static final int PAGE_SIZE = 10;

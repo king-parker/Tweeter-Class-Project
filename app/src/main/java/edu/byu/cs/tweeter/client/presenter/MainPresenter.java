@@ -21,19 +21,13 @@ public class MainPresenter implements UserService.LogoutObserver, FollowService.
         FollowService.FollowersCountObserver, FollowService.IsFollowerObserver,
         FollowService.FollowUnfollowObserver, StatusService.PostStatusObserver {
 
-    public interface View {
+    public interface View extends PresenterView {
         void logoutUser();
         void setFollowingCount(int count);
         void setFollowersCount(int count);
         void setIsFollower(boolean isFollower);
         void updateFollowButton(boolean removed);
         void enableFollowButton(boolean enable);
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
     }
 
     private View view;

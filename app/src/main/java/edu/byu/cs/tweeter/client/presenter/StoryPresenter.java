@@ -11,16 +11,10 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class StoryPresenter implements PagedServiceObserver<Status>, UserService.GetUserObserver {
 
-    public interface View {
+    public interface View extends PresenterView {
         void addItems(List<Status> statuses);
         void setLoading(boolean value);
         void navigateToUser(User user);
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
     }
 
     private static final int PAGE_SIZE = 10;

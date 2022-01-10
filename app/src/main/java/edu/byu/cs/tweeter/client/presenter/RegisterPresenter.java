@@ -13,14 +13,8 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class RegisterPresenter implements UserService.RegisterObserver {
 
-    public interface View {
+    public interface View extends PresenterView {
         void navigateToUser(User user);
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
     }
 
     private View view;
