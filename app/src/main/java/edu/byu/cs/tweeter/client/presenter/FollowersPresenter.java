@@ -1,18 +1,14 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import android.os.Message;
-
-import androidx.annotation.NonNull;
-
 import java.util.List;
 
-import edu.byu.cs.tweeter.client.backgroundTask.PagedTask;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
+import edu.byu.cs.tweeter.client.model.service.PagedServiceObserver;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class FollowersPresenter implements FollowService.Observer, UserService.GetUserObserver {
+public class FollowersPresenter implements PagedServiceObserver<User>, UserService.GetUserObserver {
 
     public interface View {
         void addItems(List<User> followers);
@@ -55,20 +51,7 @@ public class FollowersPresenter implements FollowService.Observer, UserService.G
     }
 
     @Override
-    public void handleSuccess(@NonNull Message msg) {
-        if (msg.getData().containsKey(PagedTask.ITEMS_KEY)
-                && msg.getData().containsKey(PagedTask.MORE_PAGES_KEY)) {
-            List<User> followers = (List<User>) msg.getData().getSerializable(PagedTask.ITEMS_KEY);
-            boolean hasMorePages = msg.getData().getBoolean(PagedTask.MORE_PAGES_KEY);
-
-            updateItems(followers, hasMorePages);
-        }
-        else {
-            handleException(new Exception("Internal Error: Improper call for observer to handle success"));
-        }
-    }
-
-    private void updateItems(List<User> users, boolean hasMorePages) {
+    public void handleSuccess(List<User> users, boolean hasMorePages) {
         this.hasMorePages = hasMorePages;
         lastFollower = (users.size() > 0) ? users.get(users.size() - 1) : null;
         isLoading = false;

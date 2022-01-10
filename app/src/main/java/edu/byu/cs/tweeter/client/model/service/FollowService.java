@@ -1,9 +1,6 @@
 package edu.byu.cs.tweeter.client.model.service;
 
-import android.os.Handler;
 import android.os.Message;
-
-import androidx.annotation.NonNull;
 
 import edu.byu.cs.tweeter.client.backgroundTask.AuthorizedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.BackgroundTaskUtils;
@@ -21,85 +18,22 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class FollowService {
     public static final String UPDATE_FOLLOW_KEY = "follow-unfollow";
 
-    public interface Observer {
-        void handleSuccess(@NonNull Message msg);
-        // TODO: Add parameters to failure and exception - message prefix, task tag
-        void handleFailure(String message);
-        void handleException(Exception ex);
-    }
-
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Following Service ~~~~~~~~~~~~~~~~~~~~~~~~~
     public void getFollowing(AuthToken authToken, User targetUser,
-                             int limit, User lastFollowee, Observer observer) {
+                             int limit, User lastFollowee, PagedServiceObserver<User> observer) {
         GetFollowingTask getFollowingTask = new GetFollowingTask(authToken, targetUser, limit,
-                lastFollowee, new GetFollowingHandler(observer));
+                lastFollowee, new PagedTaskHandler<>(observer));
 
         BackgroundTaskUtils.executeTask(getFollowingTask);
     }
 
-    /**
-     * Message handler (i.e., observer) for GetFollowingTask.
-     */
-    private class GetFollowingHandler extends Handler {
-        private Observer observer;
-
-        public GetFollowingHandler(Observer observer) {
-            this.observer = observer;
-        }
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-
-            boolean success = msg.getData().getBoolean(GetFollowingTask.SUCCESS_KEY);
-            if (success) {
-                observer.handleSuccess(msg);
-            } else if (msg.getData().containsKey(GetFollowingTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(GetFollowingTask.MESSAGE_KEY);
-
-                observer.handleFailure(message);
-            } else if (msg.getData().containsKey(GetFollowingTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(GetFollowingTask.EXCEPTION_KEY);
-
-                observer.handleException(ex);
-            }
-        }
-    }
-
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Followers Service ~~~~~~~~~~~~~~~~~~~~~~~~~
     public void getFollowers(AuthToken authToken, User targetUser,
-                             int limit, User lastFollower, Observer observer) {
+                             int limit, User lastFollower, PagedServiceObserver<User> observer) {
         GetFollowersTask getFollowersTask = new GetFollowersTask(authToken, targetUser, limit,
-                lastFollower, new GetFollowersHandler(observer));
+                lastFollower, new PagedTaskHandler<>(observer));
 
         BackgroundTaskUtils.executeTask(getFollowersTask);
-    }
-
-    /**
-     * Message handler (i.e., observer) for GetFollowersTask.
-     */
-    private class GetFollowersHandler extends Handler {
-        private Observer observer;
-
-        public GetFollowersHandler(Observer observer) {
-            this.observer = observer;
-        }
-
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-
-            boolean success = msg.getData().getBoolean(GetFollowersTask.SUCCESS_KEY);
-            if (success) {
-                observer.handleSuccess(msg);
-            } else if (msg.getData().containsKey(GetFollowersTask.MESSAGE_KEY)) {
-                String message = msg.getData().getString(GetFollowersTask.MESSAGE_KEY);
-
-                observer.handleFailure(message);
-            } else if (msg.getData().containsKey(GetFollowersTask.EXCEPTION_KEY)) {
-                Exception ex = (Exception) msg.getData().getSerializable(GetFollowersTask.EXCEPTION_KEY);
-
-                observer.handleException(ex);
-            }
-        }
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Following Count Service ~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -14,9 +14,9 @@ public class PagedTaskHandler <S, T extends PagedServiceObserver<S>> extends Bac
 
     @Override
     protected void handleSuccessMessage(Message msg) {
-        List<S> statuses = (List<S>) msg.getData().getSerializable(PagedTask.ITEMS_KEY);
+        List<S> items = (List<S>) msg.getData().getSerializable(PagedTask.ITEMS_KEY);
         boolean hasMorePages = msg.getData().getBoolean(PagedTask.MORE_PAGES_KEY);
 
-        observer.handleSuccess(statuses, hasMorePages);
+        observer.handleSuccess(items, hasMorePages);
     }
 }

@@ -2,8 +2,6 @@ package edu.byu.cs.tweeter.client.model.service;
 
 import android.os.Message;
 
-import java.util.List;
-
 import edu.byu.cs.tweeter.client.backgroundTask.BackgroundTaskUtils;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFeedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetStoryTask;
@@ -13,12 +11,6 @@ import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class StatusService {
-
-    public interface Observer {
-        void handleSuccess(List<Status> statuses, boolean hasMorePages);
-        void handleFailure(String message);
-        void handleException(Exception ex);
-    }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Post Status Service ~~~~~~~~~~~~~~~~~~~~~~~~~
     public interface PostStatusObserver extends ServiceObserver {
