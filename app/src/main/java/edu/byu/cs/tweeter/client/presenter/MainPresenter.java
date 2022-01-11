@@ -62,10 +62,23 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
     }
 
     public void followUnfollow(boolean wasFollowing) {
+        view.enableFollowButton(false);
+
+        if (wasFollowing) {
+            view.displayInfoMessage("Removing " + selectedUser.getName() + "...");
+        }
+        else {
+            view.displayInfoMessage("Adding " + selectedUser.getName() + "...");
+        }
+
         new FollowService().followUnfollow(authToken, selectedUser, wasFollowing, this);
+
+        view.enableFollowButton(true);
     }
 
     public void postStatus(String post) throws ParseException {
+        view.displayInfoMessage("Posting Status...");
+
         Status newStatus = new Status(post, Cache.getInstance().getCurrUser(),
                 getFormattedDateTime(), parseURLs(post), parseMentions(post));
         new StatusService().postStatus(authToken, newStatus, this);
