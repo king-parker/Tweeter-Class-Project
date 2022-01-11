@@ -23,7 +23,7 @@ public class LoginPresenter extends BasePresenter<LoginPresenter.View> implement
             view.displayInfoMessage("Logging In...");
 
             // Send the login request.
-            new UserService().login(alias, password, this);
+            getUserService().login(alias, password, this);
         }
         else {
             view.displayErrorMessage("Login failed: " + message);

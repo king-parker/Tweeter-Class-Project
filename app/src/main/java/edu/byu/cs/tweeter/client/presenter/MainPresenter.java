@@ -46,19 +46,19 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
 
         view.displayInfoMessage("Logging Out...");
 
-        new UserService().logout(authToken, this);
+        getUserService().logout(authToken, this);
     }
 
     public void getFollowingCount() {
-        new FollowService().getFollowingCount(authToken, selectedUser, this);
+        getFollowService().getFollowingCount(authToken, selectedUser, this);
     }
 
     public void getFollowersCount() {
-        new FollowService().getFollowersCount(authToken, selectedUser, this);
+        getFollowService().getFollowersCount(authToken, selectedUser, this);
     }
 
     public void isFollowing() {
-        new FollowService().isFollower(authToken, Cache.getInstance().getCurrUser(), selectedUser, this);
+        getFollowService().isFollower(authToken, Cache.getInstance().getCurrUser(), selectedUser, this);
     }
 
     public void followUnfollow(boolean wasFollowing) {
@@ -71,7 +71,7 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
             view.displayInfoMessage("Adding " + selectedUser.getName() + "...");
         }
 
-        new FollowService().followUnfollow(authToken, selectedUser, wasFollowing, this);
+        getFollowService().followUnfollow(authToken, selectedUser, wasFollowing, this);
 
         view.enableFollowButton(true);
     }
@@ -81,7 +81,7 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
 
         Status newStatus = new Status(post, Cache.getInstance().getCurrUser(),
                 getFormattedDateTime(), parseURLs(post), parseMentions(post));
-        new StatusService().postStatus(authToken, newStatus, this);
+        getStatusService().postStatus(authToken, newStatus, this);
     }
 
     public void updateSelectedUserFollowingAndFollowers() {
@@ -196,11 +196,13 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
 
     @Override
     public void handleFailure(String message) {
+        view.clearInfoMessage();
         view.displayErrorMessage(message);
     }
 
     @Override
     public void handleException(Exception ex) {
+        view.clearInfoMessage();
         view.displayErrorMessage(ex.getMessage());
     }
 }
