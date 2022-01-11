@@ -32,7 +32,7 @@ public class RegisterPresenter extends BasePresenter<RegisterPresenter.View> imp
 
             // Send the register request
             String imageBytesBase64 = imageToByteArray(image);
-            new UserService().register(firstName, lastName, alias, password, imageBytesBase64, this);
+            getUserService().register(firstName, lastName, alias, password, imageBytesBase64, this);
         }
         else {
             view.displayErrorMessage("Registration failed: " + message);

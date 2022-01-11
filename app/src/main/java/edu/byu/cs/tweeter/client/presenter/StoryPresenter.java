@@ -1,7 +1,6 @@
 package edu.byu.cs.tweeter.client.presenter;
 
 import edu.byu.cs.tweeter.client.model.service.PagedServiceObserver;
-import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -15,6 +14,6 @@ public class StoryPresenter extends PaginatedPresenter<Status> {
     @Override
     public void callPaginatedService(AuthToken authToken, User targetUser, int limit,
                                      Status lastStatus, PagedServiceObserver<Status> observer) {
-        new StatusService().getStory(authToken, targetUser, PAGE_SIZE, lastStatus, this);
+        getStatusService().getStory(authToken, targetUser, PAGE_SIZE, lastStatus, this);
     }
 }

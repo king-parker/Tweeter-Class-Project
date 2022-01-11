@@ -49,8 +49,6 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
         Intent intent = new Intent(this, LoginActivity.class);
         //Clear everything so that the main activity is recreated with the login page.
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        //Clear user data (cached data).
-        Cache.getInstance().clearCache();
         startActivity(intent);
     }
 
@@ -179,19 +177,9 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
         followButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                enableFollowButton(false);
-
                 boolean wasFollowing = followButton.getText().toString().equals(v.getContext().getString(R.string.following));
-                if (wasFollowing) {
-                    displayInfoMessage("Removing " + selectedUser.getName() + "...");
-                }
-                else {
-                    displayInfoMessage("Adding " + selectedUser.getName() + "...");
-                }
-                presenter.followUnfollow(wasFollowing);
 
-                // TODO: Remove after button enabling is handled by presenter
-                enableFollowButton(true);
+                presenter.followUnfollow(wasFollowing);
             }
         });
     }
@@ -216,8 +204,6 @@ public class MainActivity extends AppCompatActivity implements StatusDialogFragm
 
     @Override
     public void onStatusPosted(String post) {
-        displayInfoMessage("Posting Status...");
-
         try {
             presenter.postStatus(post);
         } catch (Exception ex) {
