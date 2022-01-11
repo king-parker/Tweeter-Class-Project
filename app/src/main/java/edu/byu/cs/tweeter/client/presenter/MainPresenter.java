@@ -161,8 +161,10 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
 
     @Override
     public void handleSuccess() {
-        view.logoutUser();
+        //Clear user data (cached data).
+        Cache.getInstance().clearCache();
         view.clearInfoMessage();
+        view.logoutUser();
         view.displayInfoMessage("Logged out");
     }
 
