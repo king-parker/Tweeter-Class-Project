@@ -11,22 +11,14 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
-public class RegisterPresenter implements UserService.Observer {
+public class RegisterPresenter extends BasePresenter<RegisterPresenter.View> implements UserService.RegisterObserver {
 
-    public interface View {
+    public interface View extends PresenterView {
         void navigateToUser(User user);
-
-        void displayErrorMessage(String message);
-        void clearErrorMessage();
-
-        void displayInfoMessage(String message);
-        void clearInfoMessage();
     }
 
-    private View view;
-
     public RegisterPresenter(View view) {
-        this.view = view;
+        super(view);
     }
 
     public void register(String firstName, String lastName, String alias, String password,
@@ -85,7 +77,6 @@ public class RegisterPresenter implements UserService.Observer {
 
     @Override
     public void handleSuccess(User user, AuthToken authToken) {
-
         view.navigateToUser(user);
         view.clearErrorMessage();
         view.displayInfoMessage("Hello " + user.getName());
