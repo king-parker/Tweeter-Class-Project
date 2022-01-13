@@ -8,10 +8,11 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 
+// TODO: Replace with actual presenter
 /**
  * The presenter for the login functionality of the application.
  */
-public class LoginPresenter implements UserService.Observer {
+public class LoginPresenter implements UserService.LoginObserver {
 
     private static final String LOG_TAG = "LoginPresenter";
 

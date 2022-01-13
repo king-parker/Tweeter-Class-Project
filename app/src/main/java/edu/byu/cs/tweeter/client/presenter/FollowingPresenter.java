@@ -5,14 +5,15 @@ import android.util.Log;
 import java.util.List;
 
 import edu.byu.cs.tweeter.client.model.service.FollowService;
+import edu.byu.cs.tweeter.client.model.service.PagedServiceObserver;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
 
+// TODO: Replace with actual presenter
 /**
  * The presenter for the "following" functionality of the application.
  */
-public class FollowingPresenter implements FollowService.Observer {
+public class FollowingPresenter implements PagedServiceObserver<User>, FollowService.Observer {
 
     private static final String LOG_TAG = "FollowingPresenter";
     private static final int PAGE_SIZE = 10;
@@ -97,11 +98,11 @@ public class FollowingPresenter implements FollowService.Observer {
      * @param lastFollowee the last followee returned in the previous request (can be null).
      */
     public void getFollowing(AuthToken authToken, User targetUser, int limit, User lastFollowee) {
-        String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
-        String lastFolloweeAlias = (lastFollowee == null) ? null : lastFollowee.getAlias();
-        FollowingRequest request = new FollowingRequest(authToken, targetUserAlias, limit, lastFolloweeAlias);
+//        String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
+//        String lastFolloweeAlias = (lastFollowee == null) ? null : lastFollowee.getAlias();
+//        FollowingRequest request = new FollowingRequest(authToken, targetUserAlias, limit, lastFolloweeAlias);
 
-        getFollowingService(this).getFollowees(request);
+        getFollowingService(this).getFollowees(authToken, targetUser, limit, lastFollowee, this);
     }
 
     /**

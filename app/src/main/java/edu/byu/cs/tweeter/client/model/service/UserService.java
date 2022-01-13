@@ -4,14 +4,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 
+import edu.byu.cs.tweeter.client.backgroundTask.BackgroundTaskUtils;
+import edu.byu.cs.tweeter.client.backgroundTask.LoginTask;
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.net.ServerFacade;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
-import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 
+// TODO: Replace with actual Service
 /**
  * Contains the business logic to support the login operation.
  */
@@ -19,7 +21,7 @@ public class UserService {
 
     private static final String URL_PATH = "/login";
 
-    private final Observer observer;
+    private final LoginObserver observer;
 
     private ServerFacade serverFacade;
 
@@ -39,7 +41,7 @@ public class UserService {
      * @param observer the observer who wants to be notified when any asynchronous operations
      *                 complete.
      */
-     public UserService(Observer observer) {
+     public UserService(LoginObserver observer) {
         this.observer = observer;
      }
 
@@ -50,7 +52,7 @@ public class UserService {
      */
     public void login(LoginRequest loginRequest) {
         LoginTask loginTask = getLoginTask(loginRequest);
-        BackgroundTaskUtils.runTask(loginTask);
+        BackgroundTaskUtils.executeTask(loginTask);
     }
 
     /**
@@ -68,6 +70,10 @@ public class UserService {
         return serverFacade;
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Login Service ~~~~~~~~~~~~~~~~~~~~~~~~~
+    public interface LoginObserver extends ServiceObserver {
+        void handleSuccess(User loggedInUser, AuthToken authToken);
+    }
 
     /**
      * Returns an instance of {@link LoginTask}. Allows mocking of the LoginTask class for
@@ -77,7 +83,31 @@ public class UserService {
      * @return the instance.
      */
     LoginTask getLoginTask(LoginRequest loginRequest) {
-        return new LoginTask(loginRequest, new MessageHandler(Looper.getMainLooper(), observer));
+        return new LoginTask(loginRequest.getUsername(), loginRequest.getPassword(), new LoginHandler(observer));
+    }
+
+    /**
+     * Message handler (i.e., observer) for LoginTask
+     */
+    private class LoginHandler extends BackgroundTaskHandler<LoginObserver> {
+
+//        private Observer observer;
+
+        public LoginHandler(LoginObserver observer) {
+            super(observer);
+        }
+
+        @Override
+        protected void handleSuccessMessage(Message msg) {
+            User loggedInUser = (User) msg.getData().getSerializable(LoginTask.USER_KEY);
+            AuthToken authToken = (AuthToken) msg.getData().getSerializable(LoginTask.AUTH_TOKEN_KEY);
+
+            // Cache user session information
+            Cache.getInstance().setCurrUser(loggedInUser);
+            Cache.getInstance().setCurrUserAuthToken(authToken);
+
+            observer.handleSuccess(loggedInUser, authToken);
+        }
     }
 
     /**
@@ -111,59 +141,59 @@ public class UserService {
         }
     }
 
-    /**
-     * Background task that logs in a user (i.e., starts a session).
-     */
-    private class LoginTask extends BackgroundTask {
-
-        private static final String LOG_TAG = "LoginTask";
-
-        public static final String USER_KEY = "user";
-        public static final String AUTH_TOKEN_KEY = "auth-token";
-
-        /**
-         * The user's username (or "alias" or "handle"). E.g., "@susan".
-         */
-        private final String username;
-        /**
-         * The user's password.
-         */
-        private final String password;
-
-        public LoginTask(LoginRequest loginRequest, Handler messageHandler) {
-            super(messageHandler);
-
-            this.username = loginRequest.getUsername();
-            this.password = loginRequest.getPassword();
-        }
-
-        @Override
-        protected void runTask() {
-            try {
-                LoginRequest request = new LoginRequest(username, password);
-                LoginResponse response = getServerFacade().login(request, URL_PATH);
-
-                if(response.isSuccess()) {
-                    BackgroundTaskUtils.loadImage(response.getUser());
-                    sendSuccessMessage(response.getUser(), response.getAuthToken());
-                }
-                else {
-                    sendFailedMessage(response.getMessage());
-                }
-            } catch (Exception ex) {
-                Log.e(LOG_TAG, ex.getMessage(), ex);
-                sendExceptionMessage(ex);
-            }
-        }
-
-        private void sendSuccessMessage(User loggedInUser, AuthToken authToken) {
-            sendSuccessMessage(new BundleLoader() {
-                @Override
-                public void load(Bundle msgBundle) {
-                    msgBundle.putSerializable(USER_KEY, loggedInUser);
-                    msgBundle.putSerializable(AUTH_TOKEN_KEY, authToken);
-                }
-            });
-        }
-    }
+//    /**
+//     * Background task that logs in a user (i.e., starts a session).
+//     */
+//    private class LoginTask extends BackgroundTask {
+//
+//        private static final String LOG_TAG = "LoginTask";
+//
+//        public static final String USER_KEY = "user";
+//        public static final String AUTH_TOKEN_KEY = "auth-token";
+//
+//        /**
+//         * The user's username (or "alias" or "handle"). E.g., "@susan".
+//         */
+//        private final String username;
+//        /**
+//         * The user's password.
+//         */
+//        private final String password;
+//
+//        public LoginTask(LoginRequest loginRequest, Handler messageHandler) {
+//            super(messageHandler);
+//
+//            this.username = loginRequest.getUsername();
+//            this.password = loginRequest.getPassword();
+//        }
+//
+//        @Override
+//        protected void runTask() {
+//            try {
+//                LoginRequest request = new LoginRequest(username, password);
+//                LoginResponse response = getServerFacade().login(request, URL_PATH);
+//
+//                if(response.isSuccess()) {
+//                    BackgroundTaskUtils.loadImage(response.getUser());
+//                    sendSuccessMessage(response.getUser(), response.getAuthToken());
+//                }
+//                else {
+//                    sendFailedMessage(response.getMessage());
+//                }
+//            } catch (Exception ex) {
+//                Log.e(LOG_TAG, ex.getMessage(), ex);
+//                sendExceptionMessage(ex);
+//            }
+//        }
+//
+//        private void sendSuccessMessage(User loggedInUser, AuthToken authToken) {
+//            sendSuccessMessage(new BundleLoader() {
+//                @Override
+//                public void load(Bundle msgBundle) {
+//                    msgBundle.putSerializable(USER_KEY, loggedInUser);
+//                    msgBundle.putSerializable(AUTH_TOKEN_KEY, authToken);
+//                }
+//            });
+//        }
+//    }
 }
