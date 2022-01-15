@@ -2,12 +2,12 @@ package edu.byu.cs.tweeter.model.net.request;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 
-public class AuthorizedRequest {
+public class AuthorizedRequest extends Request {
 
     private AuthToken authToken;
     private String currUserAlias;
 
-    protected AuthorizedRequest() { }
+    protected AuthorizedRequest() {super();}
 
     public AuthorizedRequest(AuthToken authToken, String currUserAlias) {
         this.authToken = authToken;
