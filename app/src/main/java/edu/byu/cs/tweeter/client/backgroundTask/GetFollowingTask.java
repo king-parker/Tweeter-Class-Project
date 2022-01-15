@@ -33,7 +33,7 @@ public class GetFollowingTask extends PagedUserTask {
 
     @Override
     protected boolean runTask() throws IOException, TweeterRemoteException {
-        FollowingResponse response = getServerFacade().getFollowees(request, URL_PATH);
+        FollowingResponse response = getServerFacade().sendRequest(request, URL_PATH, FollowingResponse.class);
 
         try {
             if (response.isSuccess()) {

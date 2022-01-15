@@ -28,7 +28,7 @@ public class LoginTask extends AuthenticationTask {
     @Override
     protected boolean runTask() throws IOException, TweeterRemoteException {
         try {
-            LoginResponse response = getServerFacade().login(request, URL_PATH);
+            LoginResponse response = getServerFacade().sendRequest(request, URL_PATH, LoginResponse.class);
 
             if (response.isSuccess()) {
                 this.user = response.getUser();

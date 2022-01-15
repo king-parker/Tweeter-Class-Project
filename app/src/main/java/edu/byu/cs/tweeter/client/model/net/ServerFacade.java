@@ -3,10 +3,8 @@ package edu.byu.cs.tweeter.client.model.net;
 import java.io.IOException;
 
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
-import edu.byu.cs.tweeter.model.net.request.LoginRequest;
-import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
-import edu.byu.cs.tweeter.model.net.response.LoginResponse;
+import edu.byu.cs.tweeter.model.net.request.Request;
+import edu.byu.cs.tweeter.model.net.response.Response;
 
 /**
  * Acts as a Facade to the Tweeter server. All network requests to the server should go through
@@ -21,34 +19,14 @@ public class ServerFacade {
     private final ClientCommunicator clientCommunicator = new ClientCommunicator(SERVER_URL);
 
     /**
-     * Performs a login and if successful, returns the logged in user and an auth token.
+     * Sends the request to the server to be processed, returns the server response.
      *
-     * @param request contains all information needed to perform a login.
-     * @return the login response.
+     * @param request contains all information needed to perform the request.
+     * @return the server response.
      */
-    public LoginResponse login(LoginRequest request, String urlPath) throws IOException, TweeterRemoteException {
-        LoginResponse response = clientCommunicator.doPost(urlPath, request, null, LoginResponse.class);
-
-        if(response.isSuccess()) {
-            return response;
-        } else {
-            throw new RuntimeException(response.getMessage());
-        }
-    }
-
-    /**
-     * Returns the users that the user specified in the request is following. Uses information in
-     * the request object to limit the number of followees returned and to return the next set of
-     * followees after any that were returned in a previous request.
-     *
-     * @param request contains information about the user whose followees are to be returned and any
-     *                other information required to satisfy the request.
-     * @return the followees.
-     */
-    public FollowingResponse getFollowees(FollowingRequest request, String urlPath)
+    public <T extends Response, S extends Request> T sendRequest(S request, String urlPath, Class<T> returnType)
             throws IOException, TweeterRemoteException {
-
-        FollowingResponse response = clientCommunicator.doPost(urlPath, request, null, FollowingResponse.class);
+        T response = clientCommunicator.doPost(urlPath, request, null, returnType);
 
         if(response.isSuccess()) {
             return response;
