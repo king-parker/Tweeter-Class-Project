@@ -15,7 +15,7 @@ import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 public class LoginTask extends AuthenticationTask {
 
     private static final String LOG_TAG = "LoginTask";
-    private static final String URL_PATH = "/login";
+    private static final String URL_PATH = "/user/login";
 
     private LoginRequest request;
 

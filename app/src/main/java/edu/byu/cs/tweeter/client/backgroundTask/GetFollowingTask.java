@@ -17,7 +17,7 @@ import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
 public class GetFollowingTask extends PagedUserTask {
 
     private static final String LOG_TAG = "GetFollowingTask";
-    static final String URL_PATH = "/getfollowing";
+    static final String URL_PATH = "/follow/following";
 
     private FollowingRequest request;
 
