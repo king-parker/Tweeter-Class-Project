@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 
 import edu.byu.cs.tweeter.client.model.net.ServerFacade;
+import edu.byu.cs.tweeter.client.util.FakeData;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 
 /**
@@ -69,6 +70,11 @@ public abstract class BackgroundTask implements Runnable {
         }
 
         return serverFacade;
+    }
+
+    // TODO: Remove from here and client.util
+    protected FakeData getFakeData() {
+        return new FakeData();
     }
 
     private void sendSuccessMessage() {
