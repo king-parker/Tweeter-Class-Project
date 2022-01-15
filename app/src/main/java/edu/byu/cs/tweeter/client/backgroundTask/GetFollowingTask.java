@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
@@ -25,17 +26,19 @@ public class GetFollowingTask extends PagedUserTask {
                             Handler messageHandler) {
         super(authToken, targetUser, limit, lastFollowee, messageHandler);
 
+        String currUserAlias = Cache.getInstance().getCurrUser().getAlias();
         String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
         String lastFolloweeAlias = (lastFollowee == null) ? null : lastFollowee.getAlias();
 
-        this.request = new FollowingRequest(authToken, targetUserAlias, limit, lastFolloweeAlias);
+        this.request = new FollowingRequest(authToken, currUserAlias, targetUserAlias, limit, lastFolloweeAlias);
     }
 
     @Override
     protected boolean runTask() throws IOException, TweeterRemoteException {
-        FollowingResponse response = getServerFacade().sendRequest(request, URL_PATH, FollowingResponse.class);
-
         try {
+            FollowingResponse response = getServerFacade().sendRequest(request, URL_PATH, FollowingResponse.class);
+
+
             if (response.isSuccess()) {
                 loadImages(response.getFollowees());
                 this.items = response.getFollowees();

@@ -1,14 +1,17 @@
 package edu.byu.cs.tweeter.client.backgroundTask;
 
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
-import java.util.List;
 
-import edu.byu.cs.tweeter.client.util.Pair;
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.StoryRequest;
+import edu.byu.cs.tweeter.model.net.response.StoryResponse;
 
 /**
  * Background task that retrieves a page of statuses from a user's story.
@@ -16,22 +19,40 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class GetStoryTask extends PagedStatusTask {
 
     private static final String LOG_TAG = "GetStoryTask";
+    static final String URL_PATH = "/status/story";
+
+    private StoryRequest request;
 
     public GetStoryTask(AuthToken authToken, User targetUser, int limit, Status lastStatus,
                         Handler messageHandler) {
         super(authToken, targetUser, limit, lastStatus, messageHandler);
+
+        String currUserAlias = Cache.getInstance().getCurrUser().getAlias();
+        String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
+
+        this.request = new StoryRequest(authToken, currUserAlias, targetUserAlias, limit, lastStatus);
     }
 
     @Override
-    protected boolean runTask() throws IOException {
-        Pair<List<Status>, Boolean> pageOfStatus = getFakeData().getPageOfStatus(lastItem, limit);
-        this.items = pageOfStatus.getFirst();
-        this.hasMorePages = pageOfStatus.getSecond();
+    protected boolean runTask() throws IOException, TweeterRemoteException {
+        try {
+            StoryResponse response = getServerFacade().sendRequest(request, URL_PATH, StoryResponse.class);
 
-        for (Status s : items) {
-            BackgroundTaskUtils.loadImage(s.getUser());
+
+            if (response.isSuccess()) {
+                loadImages(response.getStory());
+                this.items = response.getStory();
+                this.hasMorePages = response.getHasMorePages();
+
+                return true;
+            } else {
+                this.errorMessage = response.getMessage();
+                return false;
+            }
         }
-
-        return true;
+        catch (Exception ex) {
+            Log.e(LOG_TAG, ex.getMessage(), ex);
+            throw ex;
+        }
     }
 }

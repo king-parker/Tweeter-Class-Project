@@ -1,13 +1,16 @@
 package edu.byu.cs.tweeter.client.backgroundTask;
 
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
-import java.util.List;
 
-import edu.byu.cs.tweeter.client.util.Pair;
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.FollowerRequest;
+import edu.byu.cs.tweeter.model.net.response.FollowerResponse;
 
 /**
  * Background task that retrieves a page of followers.
@@ -15,22 +18,41 @@ import edu.byu.cs.tweeter.model.domain.User;
 public class GetFollowersTask extends PagedUserTask {
 
     private static final String LOG_TAG = "GetFollowersTask";
+    static final String URL_PATH = "/follow/followers";
+    
+    private FollowerRequest request;
 
     public GetFollowersTask(AuthToken authToken, User targetUser, int limit, User lastFollower,
                             Handler messageHandler) {
         super(authToken, targetUser, limit, lastFollower, messageHandler);
+
+        String currUserAlias = Cache.getInstance().getCurrUser().getAlias();
+        String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
+        String lastFollowerAlias = (lastFollower == null) ? null : lastFollower.getAlias();
+
+        this.request = new FollowerRequest(authToken, currUserAlias, targetUserAlias, limit, lastFollowerAlias);
     }
 
     @Override
-    protected boolean runTask() throws IOException {
-        Pair<List<User>, Boolean> pageOfUsers = getFakeData().getPageOfUsers(lastItem, limit, targetUser);
-        this.items = pageOfUsers.getFirst();
-        this.hasMorePages = pageOfUsers.getSecond();
+    protected boolean runTask() throws IOException, TweeterRemoteException {
+        try {
+            FollowerResponse response = getServerFacade().sendRequest(request, URL_PATH, FollowerResponse.class);
 
-        for (User u : items) {
-            BackgroundTaskUtils.loadImage(u);
+
+            if (response.isSuccess()) {
+                loadImages(response.getFollowers());
+                this.items = response.getFollowers();
+                this.hasMorePages = response.getHasMorePages();
+
+                return true;
+            } else {
+                this.errorMessage = response.getMessage();
+                return false;
+            }
         }
-
-        return true;
+        catch (Exception ex) {
+            Log.e(LOG_TAG, ex.getMessage(), ex);
+            throw ex;
+        }
     }
 }
