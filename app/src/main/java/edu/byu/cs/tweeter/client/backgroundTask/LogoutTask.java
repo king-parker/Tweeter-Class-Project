@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
 import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
@@ -21,11 +19,10 @@ public class LogoutTask extends AuthorizedTask {
 
     private LogoutRequest request;
 
-    public LogoutTask(AuthToken authToken, Handler messageHandler) {
-        super(authToken, messageHandler);
+    public LogoutTask(Handler messageHandler) {
+        super(messageHandler);
 
-        Cache cache = Cache.getInstance();
-        this.request = new LogoutRequest(cache.getCurrUserAuthToken(), cache.getCurrUser().getAlias());
+        this.request = new LogoutRequest(getCurrUserAuthToken(), getCurrUserAlias());
     }
 
     @Override

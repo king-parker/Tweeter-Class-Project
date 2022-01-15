@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.FollowRequest;
@@ -22,18 +20,10 @@ public class FollowTask extends AuthorizedTask {
     
     private FollowRequest request;
 
-    /**
-     * The user that is being followed.
-     */
-    private User followee;
+    public FollowTask(User followee, Handler messageHandler) {
+        super(messageHandler);
 
-    public FollowTask(AuthToken authToken, User followee, Handler messageHandler) {
-        super(authToken, messageHandler);
-
-        this.followee = followee;
-        
-        Cache cache = Cache.getInstance();
-        this.request = new FollowRequest(cache.getCurrUserAuthToken(), cache.getCurrUser().getAlias(), followee.getAlias());
+        this.request = new FollowRequest(getCurrUserAuthToken(), getCurrUserAlias(), followee.getAlias());
     }
 
     @Override

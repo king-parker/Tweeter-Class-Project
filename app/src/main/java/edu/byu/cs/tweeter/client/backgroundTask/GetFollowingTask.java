@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
@@ -22,15 +20,14 @@ public class GetFollowingTask extends PagedUserTask {
 
     private FollowingRequest request;
 
-    public GetFollowingTask(AuthToken authToken, User targetUser, int limit, User lastFollowee,
+    public GetFollowingTask(User targetUser, int limit, User lastFollowee,
                             Handler messageHandler) {
-        super(authToken, targetUser, limit, lastFollowee, messageHandler);
+        super(targetUser, limit, lastFollowee, messageHandler);
 
-        String currUserAlias = Cache.getInstance().getCurrUser().getAlias();
         String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
         String lastFolloweeAlias = (lastFollowee == null) ? null : lastFollowee.getAlias();
 
-        this.request = new FollowingRequest(authToken, currUserAlias, targetUserAlias, limit, lastFolloweeAlias);
+        this.request = new FollowingRequest(getCurrUserAuthToken(), getCurrUserAlias(), targetUserAlias, limit, lastFolloweeAlias);
     }
 
     @Override

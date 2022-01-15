@@ -3,7 +3,6 @@ package edu.byu.cs.tweeter.client.backgroundTask;
 import android.os.Bundle;
 import android.os.Handler;
 
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public abstract class GetCountTask extends  AuthorizedTask {
@@ -28,8 +27,8 @@ public abstract class GetCountTask extends  AuthorizedTask {
      */
     protected int count;
 
-    protected GetCountTask(AuthToken authToken, User targetUser, boolean forFollowing, Handler messageHandler) {
-        super(authToken, messageHandler);
+    protected GetCountTask(User targetUser, boolean forFollowing, Handler messageHandler) {
+        super(messageHandler);
 
         this.targetUser = targetUser;
         this.forFollowing = forFollowing;

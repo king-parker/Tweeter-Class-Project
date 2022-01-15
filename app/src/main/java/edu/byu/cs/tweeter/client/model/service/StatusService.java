@@ -6,7 +6,6 @@ import edu.byu.cs.tweeter.client.backgroundTask.BackgroundTaskUtils;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFeedTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetStoryTask;
 import edu.byu.cs.tweeter.client.backgroundTask.PostStatusTask;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -17,8 +16,8 @@ public class StatusService {
         void handlePostSuccess();
     }
 
-    public void postStatus(AuthToken authToken, Status newStatus, PostStatusObserver observer) {
-        PostStatusTask statusTask = new PostStatusTask(authToken, newStatus, new PostStatusHandler(observer));
+    public void postStatus(Status newStatus, PostStatusObserver observer) {
+        PostStatusTask statusTask = new PostStatusTask(newStatus, new PostStatusHandler(observer));
 
         BackgroundTaskUtils.executeTask(statusTask);
     }
@@ -39,18 +38,18 @@ public class StatusService {
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Feed Service ~~~~~~~~~~~~~~~~~~~~~~~~~
-    public void getFeed(AuthToken authToken, User targetUser,
-                        int limit, Status lastStatus, PagedServiceObserver<Status> observer) {
-        GetFeedTask getFeedTask = new GetFeedTask(authToken, targetUser, limit,
-                lastStatus, new PagedTaskHandler<>(observer));
+    public void getFeed(User targetUser, int limit, Status lastStatus,
+                        PagedServiceObserver<Status> observer) {
+        GetFeedTask getFeedTask = new GetFeedTask(targetUser, limit, lastStatus,
+                new PagedTaskHandler<>(observer));
 
         BackgroundTaskUtils.executeTask(getFeedTask);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Story Service ~~~~~~~~~~~~~~~~~~~~~~~~~
-    public void getStory(AuthToken authToken, User targetUser,
-                         int limit, Status lastStatus, PagedServiceObserver<Status> observer) {
-        GetStoryTask getStoryTask = new GetStoryTask(authToken, targetUser, limit,
+    public void getStory(User targetUser, int limit, Status lastStatus,
+                         PagedServiceObserver<Status> observer) {
+        GetStoryTask getStoryTask = new GetStoryTask(targetUser, limit,
                 lastStatus, new PagedTaskHandler<>(observer));
 
         BackgroundTaskUtils.executeTask(getStoryTask);

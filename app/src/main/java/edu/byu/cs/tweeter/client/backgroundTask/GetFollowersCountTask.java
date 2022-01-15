@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.FollowersCountRequest;
@@ -22,11 +20,10 @@ public class GetFollowersCountTask extends GetCountTask {
     
     private FollowersCountRequest request;
 
-    public GetFollowersCountTask(AuthToken authToken, User targetUser, Handler messageHandler) {
-        super(authToken, targetUser, false, messageHandler);
+    public GetFollowersCountTask(User targetUser, Handler messageHandler) {
+        super(targetUser, false, messageHandler);
 
-        Cache cache = Cache.getInstance();
-        this.request = new FollowersCountRequest(cache.getCurrUserAuthToken(), cache.getCurrUser().getAlias(), targetUser.getAlias());
+        this.request = new FollowersCountRequest(getCurrUserAuthToken(), getCurrUserAlias(), targetUser.getAlias());
     }
 
     @Override

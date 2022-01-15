@@ -89,8 +89,8 @@ public class UserService {
         void handleSuccess();
     }
 
-    public void logout(AuthToken authToken, LogoutObserver observer) {
-        LogoutTask logoutTask = new LogoutTask(authToken, new LogoutHandler(observer));
+    public void logout(LogoutObserver observer) {
+        LogoutTask logoutTask = new LogoutTask(new LogoutHandler(observer));
 
         BackgroundTaskUtils.executeTask(logoutTask);
     }
@@ -115,8 +115,8 @@ public class UserService {
         void handleSuccess(User selectedUser);
     }
 
-    public void getUser(AuthToken authToken, String alias, GetUserObserver observer) {
-        GetUserTask getUserTask = new GetUserTask(authToken, alias, new GetUserHandler(observer));
+    public void getUser(String alias, GetUserObserver observer) {
+        GetUserTask getUserTask = new GetUserTask(alias, new GetUserHandler(observer));
 
         BackgroundTaskUtils.executeTask(getUserTask);
     }

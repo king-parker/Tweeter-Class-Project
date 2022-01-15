@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.UnfollowRequest;
@@ -21,18 +19,10 @@ public class UnfollowTask extends AuthorizedTask {
     
     private UnfollowRequest request;
 
-    /**
-     * The user that is being followed.
-     */
-    private User followee;
+    public UnfollowTask(User followee, Handler messageHandler) {
+        super(messageHandler);
 
-    public UnfollowTask(AuthToken authToken, User followee, Handler messageHandler) {
-        super(authToken, messageHandler);
-
-        this.followee = followee;
-
-        Cache cache = Cache.getInstance();
-        this.request = new UnfollowRequest(cache.getCurrUserAuthToken(), cache.getCurrUser().getAlias(), followee.getAlias());
+        this.request = new UnfollowRequest(getCurrUserAuthToken(), getCurrUserAlias(), followee.getAlias());
     }
 
     @Override

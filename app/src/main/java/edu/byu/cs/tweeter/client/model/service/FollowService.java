@@ -12,26 +12,25 @@ import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.backgroundTask.GetFollowingTask;
 import edu.byu.cs.tweeter.client.backgroundTask.IsFollowerTask;
 import edu.byu.cs.tweeter.client.backgroundTask.UnfollowTask;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public class FollowService {
     public static final String UPDATE_FOLLOW_KEY = "follow-unfollow";
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Following Service ~~~~~~~~~~~~~~~~~~~~~~~~~
-    public void getFollowing(AuthToken authToken, User targetUser,
-                             int limit, User lastFollowee, PagedServiceObserver<User> observer) {
-        GetFollowingTask getFollowingTask = new GetFollowingTask(authToken, targetUser, limit,
-                lastFollowee, new PagedTaskHandler<>(observer));
+    public void getFollowing(User targetUser, int limit, User lastFollowee,
+                             PagedServiceObserver<User> observer) {
+        GetFollowingTask getFollowingTask = new GetFollowingTask(targetUser, limit, lastFollowee,
+                new PagedTaskHandler<>(observer));
 
         BackgroundTaskUtils.executeTask(getFollowingTask);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Get Followers Service ~~~~~~~~~~~~~~~~~~~~~~~~~
-    public void getFollowers(AuthToken authToken, User targetUser,
-                             int limit, User lastFollower, PagedServiceObserver<User> observer) {
-        GetFollowersTask getFollowersTask = new GetFollowersTask(authToken, targetUser, limit,
-                lastFollower, new PagedTaskHandler<>(observer));
+    public void getFollowers(User targetUser, int limit, User lastFollower,
+                             PagedServiceObserver<User> observer) {
+        GetFollowersTask getFollowersTask = new GetFollowersTask(targetUser, limit, lastFollower,
+                new PagedTaskHandler<>(observer));
 
         BackgroundTaskUtils.executeTask(getFollowersTask);
     }
@@ -41,9 +40,9 @@ public class FollowService {
         void handleSuccessFollowing(int count);
     }
 
-    public void getFollowingCount(AuthToken authToken, User targetUser, FollowingCountObserver observer) {
-        GetFollowingCountTask followingCountTask = new GetFollowingCountTask(authToken,
-                targetUser, new GetFollowingCountHandler(observer));
+    public void getFollowingCount(User targetUser, FollowingCountObserver observer) {
+        GetFollowingCountTask followingCountTask = new GetFollowingCountTask(targetUser,
+                new GetFollowingCountHandler(observer));
 
         BackgroundTaskUtils.executeTask(followingCountTask);
     }
@@ -70,9 +69,9 @@ public class FollowService {
         void handleSuccessFollowers(int count);
     }
 
-    public void getFollowersCount(AuthToken authToken, User targetUser, FollowersCountObserver observer) {
-        GetFollowersCountTask followersCountTask = new GetFollowersCountTask(authToken,
-                targetUser, new GetFollowersCountHandler(observer));
+    public void getFollowersCount(User targetUser, FollowersCountObserver observer) {
+        GetFollowersCountTask followersCountTask = new GetFollowersCountTask(targetUser,
+                new GetFollowersCountHandler(observer));
 
         BackgroundTaskUtils.executeTask(followersCountTask);
     }
@@ -99,8 +98,8 @@ public class FollowService {
         void handleSuccessIsFollower(boolean isFollower);
     }
 
-    public void isFollower(AuthToken authToken, User currUser, User selectedUser, IsFollowerObserver observer) {
-        IsFollowerTask isFollowerTask = new IsFollowerTask(authToken, currUser, selectedUser,
+    public void isFollower(User currUser, User selectedUser, IsFollowerObserver observer) {
+        IsFollowerTask isFollowerTask = new IsFollowerTask(currUser, selectedUser,
                 new IsFollowerHandler(observer));
 
         BackgroundTaskUtils.executeTask(isFollowerTask);
@@ -127,14 +126,14 @@ public class FollowService {
     public interface FollowUnfollowObserver extends ServiceObserver {
         void handleSuccessFollowUnfollow(boolean wasFollowing);
     }
-    public void followUnfollow(AuthToken authToken, User selectedUser, boolean wasFollowing, FollowUnfollowObserver observer) {
+    public void followUnfollow(User selectedUser, boolean wasFollowing, FollowUnfollowObserver observer) {
         AuthorizedTask followUnfollowTask;
         FollowUnfollowHandler handler = new FollowUnfollowHandler(observer, wasFollowing);
 
         if (wasFollowing) {
-            followUnfollowTask = new UnfollowTask(authToken, selectedUser, handler);
+            followUnfollowTask = new UnfollowTask(selectedUser, handler);
         } else {
-            followUnfollowTask = new FollowTask(authToken, selectedUser, handler);
+            followUnfollowTask = new FollowTask(selectedUser, handler);
         }
 
         BackgroundTaskUtils.executeTask(followUnfollowTask);

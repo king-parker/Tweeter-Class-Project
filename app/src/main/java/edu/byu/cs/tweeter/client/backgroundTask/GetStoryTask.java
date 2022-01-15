@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
@@ -23,14 +21,13 @@ public class GetStoryTask extends PagedStatusTask {
 
     private StoryRequest request;
 
-    public GetStoryTask(AuthToken authToken, User targetUser, int limit, Status lastStatus,
+    public GetStoryTask(User targetUser, int limit, Status lastStatus,
                         Handler messageHandler) {
-        super(authToken, targetUser, limit, lastStatus, messageHandler);
+        super(targetUser, limit, lastStatus, messageHandler);
 
-        String currUserAlias = Cache.getInstance().getCurrUser().getAlias();
         String targetUserAlias = (targetUser == null) ? null : targetUser.getAlias();
 
-        this.request = new StoryRequest(authToken, currUserAlias, targetUserAlias, limit, lastStatus);
+        this.request = new StoryRequest(getCurrUserAuthToken(), getCurrUserAlias(), targetUserAlias, limit, lastStatus);
     }
 
     @Override

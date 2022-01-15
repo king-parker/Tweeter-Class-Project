@@ -6,8 +6,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.IsFollowingRequest;
@@ -23,26 +21,13 @@ public class IsFollowerTask extends AuthorizedTask {
     public static final String IS_FOLLOWER_KEY = "is-follower";
     
     private IsFollowingRequest request;
-
-    /**
-     * The alleged follower.
-     */
-    private User follower;
-    /**
-     * The alleged followee.
-     */
-    private User followee;
     
     private boolean isFollower;
 
-    public IsFollowerTask(AuthToken authToken, User follower, User followee, Handler messageHandler) {
-        super(authToken, messageHandler);
+    public IsFollowerTask(User follower, User followee, Handler messageHandler) {
+        super(messageHandler);
 
-        this.follower = follower;
-        this.followee = followee;
-        
-        Cache cache = Cache.getInstance();
-        this.request = new IsFollowingRequest(cache.getCurrUserAuthToken(), cache.getCurrUser().getAlias(), follower.getAlias(), followee.getAlias());
+        this.request = new IsFollowingRequest(getCurrUserAuthToken(), getCurrUserAlias(), follower.getAlias(), followee.getAlias());
     }
 
     @Override

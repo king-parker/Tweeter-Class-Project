@@ -6,8 +6,6 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.GetUserRequest;
@@ -26,20 +24,14 @@ public class GetUserTask extends AuthorizedTask {
     private GetUserRequest request;
 
     /**
-     * Alias (or handle) for user whose profile is being retrieved.
-     */
-    private String alias;
-    /**
      * User whose profile is being retrieved.
      */
     private User selectedUser;
 
-    public GetUserTask(AuthToken authToken, String alias, Handler messageHandler) {
-        super(authToken, messageHandler);
+    public GetUserTask(String alias, Handler messageHandler) {
+        super(messageHandler);
 
-        this.alias = alias;
-        Cache cache = Cache.getInstance();
-        this.request = new GetUserRequest(cache.getCurrUserAuthToken(), cache.getCurrUser().getAlias(), alias);
+        this.request = new GetUserRequest(getCurrUserAuthToken(), getCurrUserAlias(), alias);
     }
 
     @Override
