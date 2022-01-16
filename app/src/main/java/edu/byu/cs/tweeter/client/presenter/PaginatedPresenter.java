@@ -4,7 +4,6 @@ import java.util.List;
 
 import edu.byu.cs.tweeter.client.model.service.PagedServiceObserver;
 import edu.byu.cs.tweeter.client.model.service.UserService;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 public abstract class PaginatedPresenter<T> extends BasePresenter<PaginatedPresenter.View<T>>
@@ -18,21 +17,19 @@ public abstract class PaginatedPresenter<T> extends BasePresenter<PaginatedPrese
 
     protected static final int PAGE_SIZE = 10;
 
-    private AuthToken authToken;
     private User targetUser;
     private T lastItem;
     private boolean hasMorePages = true;
     private boolean isLoading = false;
 
-    protected PaginatedPresenter(View<T> view, AuthToken authToken, User targetUser) {
+    protected PaginatedPresenter(View<T> view, User targetUser) {
         super(view);
 
-        this.authToken = authToken;
         this.targetUser = targetUser;
     }
 
     public void getUser(String alias) {
-        new UserService().getUser(authToken, alias, this);
+        new UserService().getUser(alias, this);
     }
 
     public void loadMoreItems() {
@@ -41,12 +38,12 @@ public abstract class PaginatedPresenter<T> extends BasePresenter<PaginatedPrese
             view.setLoading(true);
 
 //            new StatusService().getFeed(authToken, targetUser, PAGE_SIZE, lastItem, this);
-            callPaginatedService(authToken, targetUser, PAGE_SIZE, lastItem, this);
+            callPaginatedService(targetUser, lastItem, this);
         }
     }
 
-    public abstract void callPaginatedService(AuthToken authToken, User targetUser, int limit,
-                                              T lastItem, PagedServiceObserver<T> observer);
+    public abstract void callPaginatedService(User targetUser, T lastItem,
+                                              PagedServiceObserver<T> observer);
 
     @Override
     public void handleSuccess(List<T> items, boolean hasMorePages) {

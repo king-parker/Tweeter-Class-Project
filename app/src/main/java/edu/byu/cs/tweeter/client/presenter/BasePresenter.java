@@ -9,6 +9,11 @@ public abstract class BasePresenter <T extends PresenterView> {
     protected T view;
 
     protected BasePresenter(T view) {
+        // An assertion would be better, but Android doesn't support Java assertions
+        if(view == null) {
+            throw new NullPointerException();
+        }
+
         this.view = view;
     }
 

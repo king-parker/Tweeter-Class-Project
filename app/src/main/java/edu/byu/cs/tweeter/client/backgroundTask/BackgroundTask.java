@@ -9,7 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-import edu.byu.cs.tweeter.util.FakeData;
+import edu.byu.cs.tweeter.client.model.net.ServerFacade;
+import edu.byu.cs.tweeter.client.util.FakeData;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 
 /**
  * Base class for background task.
@@ -26,6 +28,8 @@ public abstract class BackgroundTask implements Runnable {
      * Message handler that will receive task results.
      */
     private final Handler messageHandler;
+
+    private ServerFacade serverFacade;
 
     /**
      * Error message indicating why the task failed.
@@ -51,8 +55,24 @@ public abstract class BackgroundTask implements Runnable {
         }
     }
 
-    protected abstract boolean runTask() throws IOException;
+    protected abstract boolean runTask() throws IOException, TweeterRemoteException;
 
+    /**
+     * Returns an instance of {@link ServerFacade}. Allows mocking of the ServerFacade class for
+     * testing purposes. All usages of ServerFacade should get their instance from this method to
+     * allow for proper mocking.
+     *
+     * @return the instance.
+     */
+    public ServerFacade getServerFacade() {
+        if(serverFacade == null) {
+            serverFacade = new ServerFacade();
+        }
+
+        return serverFacade;
+    }
+
+    // TODO: Remove from here and client.util
     protected FakeData getFakeData() {
         return new FakeData();
     }

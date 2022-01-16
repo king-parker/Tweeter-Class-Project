@@ -1,8 +1,13 @@
 package edu.byu.cs.tweeter.client.backgroundTask;
 
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.IOException;
+
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
+import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
 
 /**
  * Background task that creates a new user account and logs in the new user (i.e., starts a session).
@@ -10,6 +15,9 @@ import java.io.IOException;
 public class RegisterTask extends AuthenticationTask {
 
     private static final String LOG_TAG = "RegisterTask";
+    private static final String URL_PATH = "/user/register";
+
+    private RegisterRequest request;
 
     /**
      * The user's first name.
@@ -31,15 +39,29 @@ public class RegisterTask extends AuthenticationTask {
         this.firstName = firstName;
         this.lastName = lastName;
         this.image = image;
+
+        this.request = new RegisterRequest(firstName, lastName, username, password, image);
     }
 
     @Override
-    protected boolean runTask() throws IOException {
-        this.user = getFakeData().getFirstUser();
-        this.authToken = getFakeData().getAuthToken();
+    protected boolean runTask() throws IOException, TweeterRemoteException {
+        try {
+            RegisterResponse response = getServerFacade().sendRequest(request, URL_PATH, RegisterResponse.class);
 
-        BackgroundTaskUtils.loadImage(user);
+            if (response.isSuccess()) {
+                this.user = response.getUser();
+                this.authToken = response.getAuthToken();
 
-        return true;
+                BackgroundTaskUtils.loadImage(user);
+                return true;
+            } else {
+                this.errorMessage = response.getMessage();
+                return false;
+            }
+        }
+        catch (Exception ex) {
+            Log.e(LOG_TAG, ex.getMessage(), ex);
+            throw ex;
+        }
     }
 }

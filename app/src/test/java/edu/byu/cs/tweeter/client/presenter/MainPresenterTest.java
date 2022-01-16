@@ -27,10 +27,10 @@ class MainPresenterTest {
         mockStatusService = Mockito.mock(StatusService.class);
         mockCache = Mockito.mock(Cache.class);
 
-        AuthToken authToken = new AuthToken();
-        User user = new User();
+        AuthToken authToken = new AuthToken("Token");
+        User user = new User("Test", "User", "https://faculty.cs.byu.edu/~jwilkerson/cs340/tweeter/images/donald_duck.png");
 
-        mainPresenterSpy = Mockito.spy(new MainPresenter(mockMainView, authToken, user));
+        mainPresenterSpy = Mockito.spy(new MainPresenter(mockMainView, user));
 
         Mockito.doReturn(mockStatusService).when(mainPresenterSpy).getStatusService();
         Cache.setInstance(mockCache);
@@ -41,13 +41,13 @@ class MainPresenterTest {
         Answer<Void> postSucceededAnswer = new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                StatusService.PostStatusObserver observer = invocation.getArgumentAt(2,StatusService.PostStatusObserver.class);
+                StatusService.PostStatusObserver observer = invocation.getArgumentAt(1,StatusService.PostStatusObserver.class);
                 observer.handlePostSuccess();
                 return null;
             }
         };
 
-        Mockito.doAnswer(postSucceededAnswer).when(mockStatusService).postStatus(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(postSucceededAnswer).when(mockStatusService).postStatus(Mockito.any(), Mockito.any());
 
         String post = "Test";
 
@@ -74,7 +74,7 @@ class MainPresenterTest {
         Mockito.verify(mainPresenterSpy).handlePostSuccess();
 
         // Verify expected methods were called on the service
-        Mockito.verify(mockStatusService).postStatus(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(mockStatusService).postStatus(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -84,13 +84,13 @@ class MainPresenterTest {
         Answer<Void> postFailedAnswer = new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                StatusService.PostStatusObserver observer = invocation.getArgumentAt(2,StatusService.PostStatusObserver.class);
+                StatusService.PostStatusObserver observer = invocation.getArgumentAt(1,StatusService.PostStatusObserver.class);
                 observer.handleFailure(message);
                 return null;
             }
         };
 
-        Mockito.doAnswer(postFailedAnswer).when(mockStatusService).postStatus(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(postFailedAnswer).when(mockStatusService).postStatus(Mockito.any(), Mockito.any());
 
         String post = "Test";
 
@@ -118,7 +118,7 @@ class MainPresenterTest {
         Mockito.verify(mainPresenterSpy).handleFailure(message);
 
         // Verify expected methods were called on the service
-        Mockito.verify(mockStatusService).postStatus(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(mockStatusService).postStatus(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -129,13 +129,13 @@ class MainPresenterTest {
         Answer<Void> postExceptionAnswer = new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                StatusService.PostStatusObserver observer = invocation.getArgumentAt(2,StatusService.PostStatusObserver.class);
+                StatusService.PostStatusObserver observer = invocation.getArgumentAt(1,StatusService.PostStatusObserver.class);
                 observer.handleException(ex);
                 return null;
             }
         };
 
-        Mockito.doAnswer(postExceptionAnswer).when(mockStatusService).postStatus(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(postExceptionAnswer).when(mockStatusService).postStatus(Mockito.any(), Mockito.any());
 
         String post = "Test";
 
@@ -163,6 +163,6 @@ class MainPresenterTest {
         Mockito.verify(mainPresenterSpy).handleException(ex);
 
         // Verify expected methods were called on the service
-        Mockito.verify(mockStatusService).postStatus(Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(mockStatusService).postStatus(Mockito.any(), Mockito.any());
     }
 }

@@ -1,4 +1,4 @@
-package edu.byu.cs.tweeter.util;
+package edu.byu.cs.tweeter.client.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +51,7 @@ public class FakeData {
     /**
      * Generated auth token.
      */
-    private static final AuthToken authToken = new AuthToken();
+    private static final AuthToken authToken = new AuthToken("token");
 
     /**
      * List of generated users.
@@ -72,6 +72,8 @@ public class FakeData {
     // different sets of fake users (by mocking the getFakeUsers method).
     private static List<User> fakeUsersUsedToGenerateStatuses = null;
 
+    private static boolean isGeneratingStatuses = false;
+
     public FakeData() {
         if (getFakeUsers() != getFakeUsers()) {
             // Verify that getFakeUsers always returns the same list of users.
@@ -80,9 +82,13 @@ public class FakeData {
                     "each time it is called");
         }
 
+        while (isGeneratingStatuses) {}
+
         if (getFakeUsers() != fakeUsersUsedToGenerateStatuses) {
+            isGeneratingStatuses = true;
             generateFakeStatuses();
             fakeUsersUsedToGenerateStatuses = getFakeUsers();
+            isGeneratingStatuses = false;
         }
 
         if (getFakeStatuses() != getFakeStatuses()) {

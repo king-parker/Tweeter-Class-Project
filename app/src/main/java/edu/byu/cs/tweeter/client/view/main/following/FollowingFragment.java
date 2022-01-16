@@ -22,12 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.client.R;
-import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.presenter.FollowingPresenter;
 import edu.byu.cs.tweeter.client.presenter.PaginatedPresenter;
 import edu.byu.cs.tweeter.client.view.main.MainActivity;
 import edu.byu.cs.tweeter.client.view.util.ImageUtils;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 
 /**
@@ -119,8 +117,7 @@ public class FollowingFragment extends Fragment implements PaginatedPresenter.Vi
         View view = inflater.inflate(R.layout.fragment_following, container, false);
 
         User user = (User) getArguments().getSerializable(USER_KEY);
-        AuthToken authToken = Cache.getInstance().getCurrUserAuthToken();
-        presenter = new FollowingPresenter(this, authToken, user);
+        presenter = new FollowingPresenter(this, user);
 
         RecyclerView followingRecyclerView = view.findViewById(R.id.followingRecyclerView);
 

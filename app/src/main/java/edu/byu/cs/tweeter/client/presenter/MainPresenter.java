@@ -13,7 +13,6 @@ import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.client.model.service.UserService;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
 
@@ -31,12 +30,10 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
     }
 
     private User selectedUser;
-    private AuthToken authToken;
 
-    public MainPresenter(View view, AuthToken authToken, User selectedUser) {
+    public MainPresenter(View view, User selectedUser) {
         super(view);
 
-        this.authToken = authToken;
         this.selectedUser = selectedUser;
     }
 
@@ -46,19 +43,19 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
 
         view.displayInfoMessage("Logging Out...");
 
-        getUserService().logout(authToken, this);
+        getUserService().logout(this);
     }
 
     public void getFollowingCount() {
-        getFollowService().getFollowingCount(authToken, selectedUser, this);
+        getFollowService().getFollowingCount(selectedUser, this);
     }
 
     public void getFollowersCount() {
-        getFollowService().getFollowersCount(authToken, selectedUser, this);
+        getFollowService().getFollowersCount(selectedUser, this);
     }
 
     public void isFollowing() {
-        getFollowService().isFollower(authToken, Cache.getInstance().getCurrUser(), selectedUser, this);
+        getFollowService().isFollower(Cache.getInstance().getCurrUser(), selectedUser, this);
     }
 
     public void followUnfollow(boolean wasFollowing) {
@@ -71,7 +68,7 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
             view.displayInfoMessage("Adding " + selectedUser.getName() + "...");
         }
 
-        getFollowService().followUnfollow(authToken, selectedUser, wasFollowing, this);
+        getFollowService().followUnfollow(selectedUser, wasFollowing, this);
 
         view.enableFollowButton(true);
     }
@@ -81,7 +78,7 @@ public class MainPresenter extends BasePresenter<MainPresenter.View> implements 
 
         Status newStatus = new Status(post, Cache.getInstance().getCurrUser(),
                 getFormattedDateTime(), parseURLs(post), parseMentions(post));
-        getStatusService().postStatus(authToken, newStatus, this);
+        getStatusService().postStatus(newStatus, this);
     }
 
     public void updateSelectedUserFollowingAndFollowers() {
