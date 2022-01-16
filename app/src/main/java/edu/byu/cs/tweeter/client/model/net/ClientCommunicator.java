@@ -94,6 +94,9 @@ class ClientCommunicator {
                 case HttpURLConnection.HTTP_BAD_REQUEST:
                     ErrorResponse errorResponse = getErrorResponse(connection);
                     throw new TweeterRequestException(errorResponse.errorMessage, errorResponse.errorType, errorResponse.stackTrace);
+                case HttpURLConnection.HTTP_FORBIDDEN:
+                    errorResponse = getErrorResponse(connection);
+                    throw new TweeterRequestException(errorResponse.errorMessage, errorResponse.errorType, errorResponse.stackTrace);
                 case HttpURLConnection.HTTP_INTERNAL_ERROR:
                     errorResponse = getErrorResponse(connection);
                     throw new TweeterServerException(errorResponse.errorMessage, errorResponse.errorType, errorResponse.stackTrace);
