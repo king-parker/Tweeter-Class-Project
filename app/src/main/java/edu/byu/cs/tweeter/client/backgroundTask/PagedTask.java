@@ -3,6 +3,7 @@ package edu.byu.cs.tweeter.client.backgroundTask;
 import android.os.Bundle;
 import android.os.Handler;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -53,4 +54,7 @@ public abstract class PagedTask<T> extends AuthorizedTask {
         msgBundle.putSerializable(ITEMS_KEY, (Serializable) this.items);
         msgBundle.putBoolean(MORE_PAGES_KEY, this.hasMorePages);
     }
+
+    // This method is public so it can be accessed by test cases
+    public abstract void loadImages(List<T> items) throws IOException;
 }

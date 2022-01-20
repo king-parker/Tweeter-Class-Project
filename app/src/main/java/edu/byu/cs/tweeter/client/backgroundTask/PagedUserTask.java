@@ -16,9 +16,12 @@ public abstract class PagedUserTask extends PagedTask<User> {
     }
 
     // This method is public so it can be accessed by test cases
-    public void loadImages(List<User> followees) throws IOException {
-        for (User u : followees) {
-            BackgroundTaskUtils.loadImage(u);
+    @Override
+    public void loadImages(List<User> users) throws IOException {
+        if (users != null) {
+            for (User u : users) {
+                BackgroundTaskUtils.loadImage(u);
+            }
         }
     }
 }

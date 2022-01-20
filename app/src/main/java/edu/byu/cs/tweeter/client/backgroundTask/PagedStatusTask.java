@@ -17,9 +17,12 @@ public abstract class PagedStatusTask extends PagedTask<Status> {
     }
 
     // This method is public so it can be accessed by test cases
+    @Override
     public void loadImages(List<Status> statuses) throws IOException {
-        for (Status s : statuses) {
-            BackgroundTaskUtils.loadImage(s.getUser());
+        if (statuses != null) {
+            for (Status s : statuses) {
+                BackgroundTaskUtils.loadImage(s.getUser());
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.client.presenter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.byu.cs.tweeter.client.model.service.PagedServiceObserver;
@@ -47,6 +48,10 @@ public abstract class PaginatedPresenter<T> extends BasePresenter<PaginatedPrese
 
     @Override
     public void handleSuccess(List<T> items, boolean hasMorePages) {
+        if (items == null) {
+            items = new ArrayList<>();
+        }
+
         this.hasMorePages = hasMorePages;
         lastItem = (items.size() > 0) ? items.get(items.size() - 1) : null;
         isLoading = false;
@@ -56,8 +61,8 @@ public abstract class PaginatedPresenter<T> extends BasePresenter<PaginatedPrese
 
     @Override
     public void handleSuccess(User selectedUser) {
-        view.navigateToUser(selectedUser);
         view.displayInfoMessage("Getting user's profile...");
+        view.navigateToUser(selectedUser);
     }
 
     @Override
